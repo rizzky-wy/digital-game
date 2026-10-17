@@ -1,1 +1,1001 @@
-import os html_content = """<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>2D Shapes Adventure - Grade 2 Math Learning Game</title> <!-- Tailwind CSS CDN --> <script src="https://cdn.tailwindcss.com"></script> <!-- Google Fonts: Fredoka for kid-friendly UI --> <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet"> <!-- Canvas Confetti Library for Victory Effect --> <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script> <style> body { font-family: 'Fredoka', cursive, sans-serif; user-select: none; -webkit-user-select: none; } .bouncing { animation: bounce 2s infinite; } @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } } .pulse-btn { animation: pulseScale 1.8s infinite; } @keyframes pulseScale { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } } </style> </head> <body class="bg-gradient-to-br from-sky-200 via-indigo-100 to-pink-200 min-h-screen flex flex-col justify-between p-3 sm:p-6 text-gray-800"> <!-- Main Game Container --> <div class="max-w-5xl mx-auto w-full bg-white/90 rounded-3xl shadow-2xl border-4 border-yellow-300 overflow-hidden flex flex-col min-h-[640px] relative"> <!-- Header & Step Indicator --> <header class="bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400 p-4 border-b-4 border-yellow-500 text-white shadow-md"> <div class="flex flex-col md:flex-row justify-between items-center gap-3"> <div class="flex items-center gap-3"> <span class="text-3xl bouncing">📐</span> <div> <h1 class="text-xl sm:text-2xl font-black text-amber-950 drop-shadow-sm">2D Shapes Adventure</h1> <p class="text-xs font-semibold text-amber-900">Grade 2 Elementary Math • By <span class="font-extrabold text-amber-950">Rizky Wijayanto</span></p> </div> </div> <!-- 5 Stage Learning Badges --> <div id="step-indicator" class="flex items-center gap-1 sm:gap-2 bg-amber-500/40 p-1.5 rounded-2xl border border-white/40"> <!-- Dynamic Step Badges --> </div> </div> </header> <!-- Main Content Area --> <main id="main-app" class="flex-1 p-4 sm:p-8 flex flex-col items-center justify-center relative overflow-y-auto"> <!-- Content rendered dynamically via JS --> </main> <!-- Navigation Footer --> <footer id="main-footer" class="bg-slate-100 px-6 py-3 border-t-2 border-slate-200 flex justify-between items-center text-sm font-bold"> <button id="btn-prev" onclick="prevStage()" class="hidden bg-gray-400 hover:bg-gray-500 text-white px-5 py-2 rounded-full shadow transition flex items-center gap-1"> ⬅️ Back </button> <div id="footer-status" class="text-xs sm:text-sm text-gray-500 font-semibold mx-auto"> Stage 1 of 5 </div> <button id="btn-next" onclick="nextStage()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded-full shadow-lg transition flex items-center gap-1 text-base transform hover:scale-105"> Next ➡️ </button> </footer> </div> <!-- Custom Information & Feedback Modal --> <div id="custom-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"> <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl border-4 border-yellow-400 transform scale-100 transition-all"> <div id="modal-icon" class="text-6xl mb-3">🎉</div> <h3 id="modal-title" class="text-2xl font-black text-indigo-700 mb-2">Awesome!</h3> <div id="modal-text" class="text-gray-600 mb-6 text-sm sm:text-base leading-relaxed"></div> <button onclick="closeModal()" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-extrabold py-3 px-8 rounded-full shadow-lg text-lg transform hover:scale-105 transition"> Got it! 🚀 </button> </div> </div> <script> const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); function playSound(type) { if (audioCtx.state === 'suspended') { audioCtx.resume(); } const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime; if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(350, now); osc.frequency.exponentialRampToValueAtTime(700, now + 0.08); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08); osc.start(now); osc.stop(now + 0.08); } else if (type === 'correct') { osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.1); osc.frequency.setValueAtTime(783.99, now + 0.2); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.35); osc.start(now); osc.stop(now + 0.35); } else if (type === 'wrong') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, now); osc.frequency.setValueAtTime(160, now + 0.15); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3); } else if (type === 'fanfare') { const notes = [523.25, 659.25, 783.99, 1046.50]; notes.forEach((freq, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(freq, now + i * 0.1); g.gain.setValueAtTime(0.15, now + i * 0.1); g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.2); o.start(now + i * 0.1); o.stop(now + i * 0.1 + 0.2); }); } } // --- Global State & Data --- let currentStage = 1; // 1: Exploration, 2: Collaboration, 3: Communication, 4: Tournament Game, 5: Reflection // Data for 4 Main 2D Shapes const shapesData = [ { id: 'circle', name: 'Circle', emoji: '⭕', bgColor: 'bg-rose-100', borderColor: 'border-rose-400', textColor: 'text-rose-600', sisi: '1 Curved side', sudut: '0 Corners (No sharp corners)', examples: [ { name: 'Dinner Plate', emoji: '🍽️' }, { name: 'Wall Clock', emoji: '⏰' }, { name: 'Bicycle Wheel', emoji: '🚲' }, { name: 'Coin', emoji: '🪙' } ], desc: 'A perfectly round shape without corners. It rolls super smoothly!' }, { id: 'square', name: 'Square', emoji: '🔲', bgColor: 'bg-sky-100', borderColor: 'border-sky-400', textColor: 'text-sky-600', sisi: '4 Equal straight sides', sudut: '4 Right angles (corners)', examples: [ { name: 'Floor Tile', emoji: '🔲' }, { name: 'Chessboard', emoji: '♟️' }, { name: 'Origami Paper', emoji: '📄' }, { name: 'Room Window', emoji: '🪟' } ], desc: 'Has 4 straight sides of exactly equal length and 4 square corners.' }, { id: 'rectangle', name: 'Rectangle', emoji: '🟩', bgColor: 'bg-emerald-100', borderColor: 'border-emerald-400', textColor: 'text-emerald-600', sisi: '4 Sides (2 long & 2 short opposite sides)', sudut: '4 Right angles (corners)', examples: [ { name: 'Whiteboard', emoji: '🏫' }, { name: 'Classroom Door', emoji: '🚪' }, { name: 'Notebook', emoji: '📚' }, { name: 'Phone Screen', emoji: '📱' } ], desc: 'Has 2 long sides and 2 short sides facing each other.' }, { id: 'triangle', name: 'Triangle', emoji: '🔺', bgColor: 'bg-amber-100', borderColor: 'border-amber-400', textColor: 'text-amber-600', sisi: '3 Straight sides', sudut: '3 Corners', examples: [ { name: 'Pizza Slice', emoji: '🍕' }, { name: 'Set Square Ruler', emoji: '📐' }, { name: 'Traffic Sign', emoji: '⚠️' }, { name: 'House Roof', emoji: '🏠' } ], desc: 'A unique shape with exactly 3 straight sides and 3 sharp corners.' } ]; // Collaboration Scenarios Data const collabProblems = [ { id: 1, title: 'Problem 1: Brother\\'s Bicycle Wheel', story: 'Mom wants to attach wheels to little brother\\'s new bicycle. To make sure the bicycle rolls smoothly without getting stuck, which 2D shape should she choose?', options: [ { shape: 'Circle', isCorrect: true, reason: 'Exactly right! A circle has no sharp corners, so it rolls smoothly!' }, { shape: 'Square', isCorrect: false, reason: 'A square has 4 corners, so the wheel won\\'t be able to roll!' }, { shape: 'Triangle', isCorrect: false, reason: 'A triangle has 3 sharp corners, the bicycle would get stuck instantly!' } ] }, { id: 2, title: 'Problem 2: New Classroom Board', story: 'The teacher wants to build a wide new board at the front of the classroom so there is plenty of space to write lessons. Which 2D shape is best suited?', options: [ { shape: 'Rectangle', isCorrect: true, reason: 'Awesome! A rectangle is wide and fits perfectly on classroom walls!' }, { shape: 'Circle', isCorrect: false, reason: 'A circle gets narrow at the top and bottom, giving very little space to write!' }, { shape: 'Triangle', isCorrect: false, reason: 'A triangle gets pointed at the top, making the writing area way too small!' } ] } ]; // Group Presentation Data const groupPresentationData = [ { group: 'Red', color: 'bg-red-500', badge: '🔴 Red Team', item: 'Coins & Dinner Plate', shape: 'Circle', desc: 'Curved side with zero corners, perfectly designed to spin and roll!' }, { group: 'Yellow', color: 'bg-amber-400', badge: '🟡 Yellow Team', item: 'Triangle Ruler & Pizza Slice', shape: 'Triangle', desc: 'Contains 3 straight sides and 3 pointed corners!' }, { group: 'Green', color: 'bg-emerald-500', badge: '🟢 Green Team', item: 'Classroom Door & Whiteboard', shape: 'Rectangle', desc: 'Has 2 long sides and 2 short opposite sides!' }, { group: 'Black', color: 'bg-gray-800', badge: '⚫ Black Team', item: 'Floor Tile & Chessboard', shape: 'Square', desc: 'All 4 sides are identical in length with 4 right corners!' } ]; // Tournament State let tournamentState = { matches: [ { id: 'semi1', name: 'Semifinal 1', teamA: '🔴 Red', teamB: '🟡 Yellow', winner: null, loser: null, scoreA: 0, scoreB: 0, done: false }, { id: 'semi2', name: 'Semifinal 2', teamA: '🟢 Green', teamB: '⚫ Black', winner: null, loser: null, scoreA: 0, scoreB: 0, done: false }, { id: 'third', name: '3rd Place Match', teamA: 'TBD', teamB: 'TBD', winner: null, loser: null, scoreA: 0, scoreB: 0, done: false }, { id: 'final', name: 'Grand Final', teamA: 'TBD', teamB: 'TBD', winner: null, loser: null, scoreA: 0, scoreB: 0, done: false } ], activeMatchIndex: -1, currentQuestionIdx: 0, ranks: { rank1: '-', rank2: '-', rank3: '-', rank4: '-' } }; // Tournament Question Bank (10 Questions with Concrete Objects) const tournamentQuestions = [ { q: 'Look at this honeycomb wall decor unit. If we observe its circular inner glass dish or round plate base, which 2D shape has no corners at all?', opt: ['Circle', 'Square', 'Triangle'], ans: 'Circle', icon: '⭕', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#38bdf8" stroke="#0284c7" stroke-width="6"/><circle cx="50" cy="50" r="25" fill="#e0f2fe" stroke="#0284c7" stroke-width="4" stroke-dasharray="4"/></svg>`, detail: 'Antique clock dials & round bathroom mirrors are Circles!' }, { q: 'This scout camping tent has 3 straight support poles and 3 pointed corners at the top. What shape is it?', opt: ['Triangle', 'Square', 'Rectangle'], ans: 'Triangle', icon: '⛺', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><polygon points="50,15 15,85 85,85" fill="#f59e0b" stroke="#b45309" stroke-width="6"/><polygon points="50,15 50,85 85,85" fill="#d97706"/></svg>`, detail: 'Camping tents, pyramids, and clothes hangers are Triangles!' }, { q: 'This sailboat flag was cut diagonally from a piece of Toast Bread. The flag has exactly 3 straight sides. What shape is it?', opt: ['Triangle', 'Rectangle', 'Circle'], ans: 'Triangle', icon: '⛵', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><path d="M20,80 L20,10 L80,80 Z" fill="#ef4444" stroke="#991b1b" stroke-width="5"/><line x1="20" y1="80" x2="20" y2="95" stroke="#475569" stroke-width="6"/></svg>`, detail: 'Sailboat sails and diagonal sandwich cuts are Triangles!' }, { q: 'When opened, this museum secret envelope has 2 long parallel sides and 2 short sides with 4 right corners. What shape is it?', opt: ['Rectangle', 'Square', 'Triangle'], ans: 'Rectangle', icon: '✉️', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><rect x="10" y="25" width="80" height="50" rx="4" fill="#10b981" stroke="#047857" stroke-width="5"/><path d="M10,25 L50,55 L90,25" fill="none" stroke="#047857" stroke-width="4"/></svg>`, detail: 'Envelopes, whiteboards, and cinema TV screens are Rectangles!' }, { q: 'This yellow Sticky Note on the lab desk has 4 sides that are ALL EXACTLY EQUAL in length and 4 square corners. What shape is this?', opt: ['Square', 'Rectangle', 'Circle'], ans: 'Square', icon: '🟨', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" rx="6" fill="#facc15" stroke="#ca8a04" stroke-width="6"/><path d="M70,85 L85,70 L70,70 Z" fill="#eab308"/></svg>`, detail: 'Sticky notes, floppy disks, and floor ceramic tiles are Squares!' }, { q: 'This steel Musical Triangle instrument ring produces sound when struck. It has 3 corners. What is its 2D shape name?', opt: ['Triangle', 'Square', 'Circle'], ans: 'Triangle', icon: '📐', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><polygon points="50,20 20,80 80,80" fill="none" stroke="#64748b" stroke-width="8" stroke-linejoin="round"/><circle cx="50" cy="15" r="4" fill="#475569"/></svg>`, detail: 'The musical triangle instrument has 3 straight sides and 3 corners!' }, { q: 'The glass lens of this detective Magnifying Glass is completely round without any corners. What shape is it?', opt: ['Circle', 'Rectangle', 'Square'], ans: 'Circle', icon: '🔍', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><circle cx="42" cy="42" r="30" fill="#a5f3fc" stroke="#0284c7" stroke-width="6"/><line x1="64" y1="64" x2="88" y2="88" stroke="#334155" stroke-width="10" stroke-linecap="round"/></svg>`, detail: 'Magnifying lenses, ancient coins, and drum heads are Circles!' }, { q: 'This Award Certificate Frame has 2 longer sides and 2 shorter sides with 4 right corners. What shape is this?', opt: ['Rectangle', 'Square', 'Triangle'], ans: 'Rectangle', icon: '🖼️', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="6"/><rect x="18" y="28" width="64" height="44" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3"/></svg>`, detail: 'Certificate frames, soccer fields, and mattresses are Rectangles!' }, { q: 'A wooden Chessboard in the library contains 64 small grid squares. Its outer boundary has 4 equal-length sides. It is a...', opt: ['Square', 'Triangle', 'Rectangle'], ans: 'Square', icon: '♟️', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" fill="#fff" stroke="#1e293b" stroke-width="6"/><rect x="15" y="15" width="35" height="35" fill="#334155"/><rect x="50" y="50" width="35" height="35" fill="#334155"/></svg>`, detail: 'Chessboards and square sofa cushions are Squares!' }, { q: 'This School Crossing Caution Road Sign has 3 straight sides and 3 corners. What 2D shape is this?', opt: ['Triangle', 'Circle', 'Rectangle'], ans: 'Triangle', icon: '⚠️', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><polygon points="50,15 12,85 88,85" fill="#facc15" stroke="#854d0e" stroke-width="6"/><text x="50" y="70" font-size="35" font-weight="bold" text-anchor="middle" fill="#854d0e">!</text></svg>`, detail: 'Warning signs and pie slices are Triangles!' }, { q: 'A shiny vintage CD/DVD game disc spins inside a player. The outer edge of its surface forms a...', opt: ['Circle', 'Square', 'Triangle'], ans: 'Circle', icon: '💿', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="#e2e8f0" stroke="#64748b" stroke-width="5"/><circle cx="50" cy="50" r="10" fill="#ffffff" stroke="#64748b" stroke-width="4"/></svg>`, detail: 'CD discs, Ferris wheels, and coins are Circles!' }, { q: 'This wooden Set Square Ruler used by carpenters forms a closed shape with 3 straight sides. What shape is it?', opt: ['Triangle', 'Rectangle', 'Square'], ans: 'Triangle', icon: '📐', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><polygon points="20,15 20,85 85,85" fill="#fbbf24" stroke="#d97706" stroke-width="5"/><polygon points="32,40 32,73 65,73" fill="#ffffff" stroke="#d97706" stroke-width="3"/></svg>`, detail: 'Set square rulers have 3 straight sides and 3 corners!' }, { q: 'A SIM Card or Bank ATM Card has 4 right corners and 2 pairs of equal opposite sides. What shape is it?', opt: ['Rectangle', 'Square', 'Circle'], ans: 'Rectangle', icon: '💳', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><rect x="10" y="25" width="80" height="50" rx="6" fill="#818cf8" stroke="#3730a3" stroke-width="5"/><rect x="22" y="40" width="16" height="14" rx="2" fill="#f59e0b"/></svg>`, detail: 'ATM cards, paper money, and school buses are Rectangles!' }, { q: 'If all 4 sides of this sweet chocolate cracker measure exactly the same (e.g. 5 cm each), what shape is it?', opt: ['Square', 'Triangle', 'Rectangle'], ans: 'Square', icon: '🧇', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><rect x="18" y="18" width="64" height="64" rx="8" fill="#b45309" stroke="#78350f" stroke-width="6"/><circle cx="35" cy="35" r="4" fill="#78350f"/><circle cx="65" cy="35" r="4" fill="#78350f"/><circle cx="35" cy="65" r="4" fill="#78350f"/><circle cx="65" cy="65" r="4" fill="#78350f"/></svg>`, detail: 'Square crackers and cube cheese slices have 4 equal sides!' }, { q: 'A Computer Monitor screen in the computer lab is wide with 4 right corners, 2 long sides, and 2 short sides. What is it?', opt: ['Rectangle', 'Square', 'Circle'], ans: 'Rectangle', icon: '🖥️', svg: `<svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100"><rect x="10" y="15" width="80" height="52" rx="4" fill="#38bdf8" stroke="#1e293b" stroke-width="6"/><path d="M40,67 L60,67 L65,85 L35,85 Z" fill="#64748b"/></svg>`, detail: 'Computer monitors, drawing books, and notice boards are Rectangles!' } ]; // Reflection & Survey State let surveyCounts = { sangatSuka: 0, suka: 0, biasaSaja: 0 }; let userVoted = false; let selectedOptionKey = null; let questionTimer = null; let timeLeft = 10; let answeringTeam = null; let matchQuestionSet = []; function renderStepHeader() { const steps = [ { num: 1, label: '1. Exploration' }, { num: 2, label: '2. Collaboration' }, { num: 3, label: '3. Presentation' }, { num: 4, label: '4. Tournament' }, { num: 5, label: '5. Reflection' } ]; const container = document.getElementById('step-indicator'); container.innerHTML = steps.map(s => { const active = s.num === currentStage; return ` <div onclick="goToStage(${s.num})" class="cursor-pointer text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-xl transition flex items-center gap-1 ${active ? 'bg-white text-amber-900 shadow-md font-extrabold scale-105' : 'text-amber-950/80 hover:bg-white/20'}"> <span>${active ? '⭐' : ''}</span> <span class="hidden md:inline">${s.label}</span> <span class="md:hidden">${s.num}</span> </div> `; }).join(''); document.getElementById('footer-status').innerText = `Stage ${currentStage} of 5`; document.getElementById('btn-prev').classList.toggle('hidden', currentStage === 1); document.getElementById('btn-next').innerText = (currentStage === 5) ? '🎉 Finish!' : 'Next ➡️'; } function goToStage(stageNum) { playSound('click'); currentStage = stageNum; renderCurrentStage(); } function nextStage() { if (currentStage < 5) { playSound('click'); currentStage++; renderCurrentStage(); } else { playSound('fanfare'); showModal("Congratulations Grade 2! 🎓", "You all did an amazing job completing today\\'s 2D Shapes adventure!", true); } } function prevStage() { if (currentStage > 1) { playSound('click'); currentStage--; renderCurrentStage(); } } function renderCurrentStage() { renderStepHeader(); const main = document.getElementById('main-app'); main.innerHTML = ''; switch (currentStage) { case 1: renderStage1(main); break; case 2: renderStage2(main); break; case 3: renderStage3(main); break; case 4: renderStage4(main); break; case 5: renderStage5(main); break; } } // ========================================== // STAGE 1: EXPLORATION // ========================================== let selectedShapeIdx = 0; function renderStage1(container) { const shape = shapesData[selectedShapeIdx]; container.innerHTML = ` <div class="w-full max-w-4xl flex flex-col items-center"> <div class="text-center mb-4"> <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Stage 1: Exploration</span> <h2 class="text-2xl sm:text-3xl font-black text-indigo-900 mt-1">Discovering 2D Shapes Around Us</h2> <p class="text-gray-600 text-xs sm:text-sm">Click any shape card below to inspect its features and real-world examples!</p> </div> <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full mb-6"> ${shapesData.map((s, idx) => ` <button onclick="playSound('click'); selectedShapeIdx=${idx}; renderCurrentStage();" class="p-3 sm:p-4 rounded-2xl border-4 transition flex flex-col items-center justify-center gap-1 shadow-md hover:scale-105 ${idx === selectedShapeIdx ? s.bgColor + ' ' + s.borderColor + ' scale-105 ring-4 ring-yellow-300' : 'bg-white border-gray-200 hover:border-gray-300'}"> <span class="text-4xl sm:text-5xl">${s.emoji}</span> <span class="font-extrabold text-sm sm:text-base ${s.textColor}">${s.name}</span> </button> `).join('')} </div> <div class="w-full bg-white rounded-3xl p-6 border-4 ${shape.borderColor} shadow-xl flex flex-col md:flex-row items-center gap-6"> <div class="flex-shrink-0 text-center ${shape.bgColor} p-6 rounded-2xl border-2 ${shape.borderColor} w-full md:w-48 flex flex-col items-center justify-center"> <span class="text-7xl bouncing">${shape.emoji}</span> <span class="font-black text-xl mt-2 ${shape.textColor}">${shape.name}</span> </div> <div class="flex-1 space-y-3"> <div class="space-y-1"> <h3 class="font-black text-lg text-gray-800">🔍 Key Features:</h3> <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm font-bold"> <div class="bg-slate-100 p-2.5 rounded-xl border border-slate-200 text-slate-700">📏 Sides: <span class="text-indigo-600">${shape.sisi}</span></div> <div class="bg-slate-100 p-2.5 rounded-xl border border-slate-200 text-slate-700">📐 Corners: <span class="text-indigo-600">${shape.sudut}</span></div> </div> </div> <p class="text-xs sm:text-sm text-gray-600 bg-amber-50 p-3 rounded-xl border border-amber-200 leading-relaxed"> 💡 <span class="font-bold">Explanation:</span> ${shape.desc} </p> <div> <h4 class="font-extrabold text-xs text-gray-500 uppercase tracking-wider mb-2">Real-world Examples Around Us:</h4> <div class="grid grid-cols-2 sm:grid-cols-4 gap-2"> ${shape.examples.map(ex => ` <div class="bg-gray-50 border border-gray-200 p-2 rounded-xl text-center flex flex-col items-center justify-center shadow-sm"> <span class="text-2xl">${ex.emoji}</span> <span class="text-[11px] font-bold text-gray-700 mt-1">${ex.name}</span> </div> `).join('')} </div> </div> </div> </div> </div> `; } // ========================================== // STAGE 2: COLLABORATION // ========================================== let currentProblemIdx = 0; function renderStage2(container) { const prob = collabProblems[currentProblemIdx]; container.innerHTML = ` <div class="w-full max-w-3xl flex flex-col items-center"> <div class="text-center mb-4"> <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Stage 2: Group Collaboration</span> <h2 class="text-2xl sm:text-3xl font-black text-amber-900 mt-1">Let\\'s Discuss and Solve the Problem! 🤝</h2> <p class="text-gray-600 text-xs sm:text-sm">Work together with your group to choose the best shape solution!</p> </div> <div class="w-full bg-gradient-to-br from-amber-50 to-orange-50 border-4 border-amber-300 rounded-3xl p-6 shadow-xl mb-6"> <div class="flex items-center gap-3 mb-3"> <span class="bg-amber-500 text-white font-black px-3 py-1 rounded-full text-xs">${prob.title}</span> </div> <p class="text-base sm:text-lg font-bold text-gray-800 leading-relaxed mb-6 bg-white/80 p-4 rounded-2xl border border-amber-200 shadow-inner"> "${prob.story}" </p> <h4 class="font-extrabold text-sm text-amber-900 mb-3 text-center">Select the Best Shape Solution:</h4> <div class="grid grid-cols-1 sm:grid-cols-3 gap-4"> ${prob.options.map(opt => ` <button onclick="checkCollabSolution(${opt.isCorrect}, '${opt.reason}')" class="bg-white hover:bg-yellow-100 border-3 border-amber-300 text-amber-950 font-black p-4 rounded-2xl shadow-md transition transform hover:scale-105 flex flex-col items-center justify-center gap-2"> <span class="text-3xl">${getShapeEmojiByName(opt.shape)}</span> <span class="text-base">${opt.shape}</span> </button> `).join('')} </div> </div> <div class="flex gap-2"> ${collabProblems.map((p, idx) => ` <button onclick="playSound('click'); currentProblemIdx=${idx}; renderCurrentStage();" class="px-4 py-2 rounded-xl font-bold text-xs ${idx === currentProblemIdx ? 'bg-amber-500 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"> Problem ${idx + 1} </button> `).join('')} </div> </div> `; } function checkCollabSolution(isCorrect, reason) { if (isCorrect) { playSound('correct'); showModal("Great Group Solution! 🎉", reason, true); } else { playSound('wrong'); showModal("Try Discussing Again! 🤔", reason, false); } } function getShapeEmojiByName(name) { if (name === 'Circle') return '⭕'; if (name === 'Square') return '🔲'; if (name === 'Rectangle') return '🟩'; if (name === 'Triangle') return '🔺'; return '⭐'; } // ========================================== // STAGE 3: COMMUNICATION & PRESENTATION // ========================================== let selectedGroupIdx = 0; function renderStage3(container) { const groupData = groupPresentationData[selectedGroupIdx]; container.innerHTML = ` <div class="w-full max-w-4xl flex flex-col items-center"> <div class="text-center mb-4"> <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Stage 3: Communication & Presentation</span> <h2 class="text-2xl sm:text-3xl font-black text-emerald-900 mt-1">Group Presentation Board 📢</h2> <p class="text-gray-600 text-xs sm:text-sm">Group representatives can present their real-world shape findings to the class!</p> </div> <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full mb-6"> ${groupPresentationData.map((g, idx) => ` <button onclick="playSound('click'); selectedGroupIdx=${idx}; renderCurrentStage();" class="py-3 px-3 rounded-2xl font-black text-xs sm:text-sm transition border-3 shadow-sm ${idx === selectedGroupIdx ? g.color + ' text-white border-white scale-105 ring-4 ring-yellow-300 shadow-lg' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'}"> ${g.badge} </button> `).join('')} </div> <div class="w-full bg-slate-900 border-8 border-amber-700 rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-6"> <div class="absolute -top-10 -right-10 text-white/5 text-9xl font-black select-none pointer-events-none">${groupData.group}</div> <div class="flex-shrink-0 ${groupData.color} p-6 rounded-2xl border-4 border-white text-center w-full md:w-56 shadow-lg"> <span class="bg-white/20 text-white text-xs font-black px-3 py-1 rounded-full uppercase">Group Discovery</span> <div class="text-6xl my-3 bouncing">${getShapeEmojiByName(groupData.shape)}</div> <h3 class="text-2xl font-black">${groupData.shape}</h3> </div> <div class="flex-1 space-y-4"> <div class="bg-slate-800/90 p-4 rounded-2xl border border-slate-700 space-y-2"> <span class="text-xs text-amber-400 font-bold uppercase tracking-wider">Discovered Objects Around Us:</span> <h4 class="text-xl font-extrabold text-yellow-300">" ${groupData.item} "</h4> </div> <div class="bg-slate-800/90 p-4 rounded-2xl border border-slate-700 space-y-2"> <span class="text-xs text-emerald-400 font-bold uppercase tracking-wider">Group Feature Explanation:</span> <p class="text-sm text-slate-200 leading-relaxed">${groupData.desc}</p> </div> <button onclick="playSound('fanfare'); showModal('Class Applause! 👏👏', 'Great job to ${groupData.badge} for their fantastic presentation!', true);" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-black py-2.5 px-6 rounded-full text-xs sm:text-sm shadow-lg transition transform hover:scale-105 flex items-center gap-2"> 👏 Give a Big Round of Applause! </button> </div> </div> </div> `; } // ========================================== // STAGE 4: INTERACTIVE TOURNAMENT GAME (10 FAST & CORRECT QUESTIONS) // ========================================== function renderStage4(container) { if (tournamentState.activeMatchIndex === -1) { renderTournamentBracket(container); } else { renderMatchArena(container); } } function renderTournamentBracket(container) { const m = tournamentState.matches; container.innerHTML = ` <div class="w-full max-w-4xl flex flex-col items-center"> <div class="text-center mb-4"> <span class="bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Stage 4: Inter-Group Tournament</span> <h2 class="text-2xl sm:text-3xl font-black text-red-900 mt-1">🏆 2D Shapes Champion Tournament</h2> <p class="text-gray-600 text-xs sm:text-sm">Each match consists of 10 "Fast & Correct" speed buzzer questions!</p> </div> <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-6"> <div class="space-y-4"> <h3 class="font-extrabold text-xs text-gray-500 uppercase text-center">Semifinals</h3> <div class="bg-white border-3 ${m[0].done ? 'border-emerald-400' : 'border-red-300'} p-3 rounded-2xl shadow-md"> <div class="text-xs font-bold text-gray-500 mb-2 flex justify-between"> <span>Match 1 (10 Qs)</span> <span>${m[0].done ? '✅ Completed' : '⏳ Pending'}</span> </div> <div class="space-y-1.5 mb-3"> <div class="p-2 rounded-xl text-xs font-bold flex justify-between ${m[0].winner === m[0].teamA ? 'bg-amber-100 text-amber-900 font-extrabold' : 'bg-gray-100'}"> <span>${m[0].teamA}</span><span>Score: ${m[0].scoreA}</span> </div> <div class="p-2 rounded-xl text-xs font-bold flex justify-between ${m[0].winner === m[0].teamB ? 'bg-amber-100 text-amber-900 font-extrabold' : 'bg-gray-100'}"> <span>${m[0].teamB}</span><span>Score: ${m[0].scoreB}</span> </div> </div> ${!m[0].done ? `<button onclick="startMatch(0)" class="w-full bg-red-500 hover:bg-red-600 text-white font-extrabold py-1.5 rounded-xl text-xs shadow">⚔️ Play Match Now</button>` : ''} </div> <div class="bg-white border-3 ${m[1].done ? 'border-emerald-400' : 'border-red-300'} p-3 rounded-2xl shadow-md"> <div class="text-xs font-bold text-gray-500 mb-2 flex justify-between"> <span>Match 2 (10 Qs)</span> <span>${m[1].done ? '✅ Completed' : '⏳ Pending'}</span> </div> <div class="space-y-1.5 mb-3"> <div class="p-2 rounded-xl text-xs font-bold flex justify-between ${m[1].winner === m[1].teamA ? 'bg-amber-100 text-amber-900 font-extrabold' : 'bg-gray-100'}"> <span>${m[1].teamA}</span><span>Score: ${m[1].scoreA}</span> </div> <div class="p-2 rounded-xl text-xs font-bold flex justify-between ${m[1].winner === m[1].teamB ? 'bg-amber-100 text-amber-900 font-extrabold' : 'bg-gray-100'}"> <span>${m[1].teamB}</span><span>Score: ${m[1].scoreB}</span> </div> </div> ${!m[1].done && m[0].done ? `<button onclick="startMatch(1)" class="w-full bg-red-500 hover:bg-red-600 text-white font-extrabold py-1.5 rounded-xl text-xs shadow">⚔️ Play Match Now</button>` : ''} </div> </div> <div class="flex flex-col justify-center space-y-4"> <h3 class="font-extrabold text-xs text-gray-500 uppercase text-center">3rd Place Match</h3> <div class="bg-white border-3 ${m[2].done ? 'border-emerald-400' : 'border-blue-300'} p-3 rounded-2xl shadow-md"> <div class="text-xs font-bold text-gray-500 mb-2 flex justify-between"> <span>Match 3 (10 Qs)</span> <span>${m[2].done ? '✅ Completed' : '⏳ Pending'}</span> </div> <div class="space-y-1.5 mb-3"> <div class="p-2 rounded-xl text-xs font-bold flex justify-between ${m[2].winner === m[2].teamA ? 'bg-amber-100 text-amber-900 font-extrabold' : 'bg-gray-100'}"> <span>${m[2].teamA}</span><span>Score: ${m[2].scoreA}</span> </div> <div class="p-2 rounded-xl text-xs font-bold flex justify-between ${m[2].winner === m[2].teamB ? 'bg-amber-100 text-amber-900 font-extrabold' : 'bg-gray-100'}"> <span>${m[2].teamB}</span><span>Score: ${m[2].scoreB}</span> </div> </div> ${!m[2].done && m[0].done && m[1].done ? `<button onclick="startMatch(2)" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-extrabold py-1.5 rounded-xl text-xs shadow">🥉 Play 3rd Place Match</button>` : ''} </div> </div> <div class="flex flex-col justify-center space-y-4"> <h3 class="font-extrabold text-xs text-gray-500 uppercase text-center">Grand Final</h3> <div class="bg-gradient-to-br from-yellow-100 to-amber-100 border-4 ${m[3].done ? 'border-emerald-400' : 'border-yellow-400'} p-4 rounded-2xl shadow-lg"> <div class="text-xs font-bold text-amber-800 mb-2 flex justify-between"> <span>👑 FINAL (10 Qs)</span> <span>${m[3].done ? '🎉 Completed' : '⏳ Pending'}</span> </div> <div class="space-y-1.5 mb-3"> <div class="p-2 rounded-xl text-xs font-bold flex justify-between ${m[3].winner === m[3].teamA ? 'bg-yellow-300 text-amber-950 font-black' : 'bg-white'}"> <span>${m[3].teamA}</span><span>Score: ${m[3].scoreA}</span> </div> <div class="p-2 rounded-xl text-xs font-bold flex justify-between ${m[3].winner === m[3].teamB ? 'bg-yellow-300 text-amber-950 font-black' : 'bg-white'}"> <span>${m[3].teamB}</span><span>Score: ${m[3].scoreB}</span> </div> </div> ${!m[3].done && m[2].done ? `<button onclick="startMatch(3)" class="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-amber-950 font-black py-2 rounded-xl text-xs shadow-lg pulse-btn">🏆 Play Grand Final!</button>` : ''} </div> </div> </div> ${m[3].done ? ` <div class="w-full bg-white border-4 border-yellow-400 rounded-3xl p-6 shadow-xl text-center space-y-6"> <div> <h3 class="text-2xl sm:text-3xl font-black text-amber-600 mb-1">🎉 TOURNAMENT PODIUM & MEDAL CEREMONY 🎉</h3> <p class="text-xs sm:text-sm text-gray-600 font-semibold">Congratulations to all representatives! Tap on any medal to view the team badge certificate.</p> </div> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"> <!-- 1st Place Gold Medal Card --> <div onclick="showMedalDetail('1st Place Gold Medal 🏆', '${tournamentState.ranks.rank1}', 'Gold', '🥇 Grand Champion', 'For outstanding speed, teamwork, and mastery of 2D Shapes!')" class="cursor-pointer bg-gradient-to-b from-yellow-100 via-amber-50 to-yellow-200 border-4 border-yellow-400 p-4 rounded-3xl shadow-lg hover:scale-105 transition transform flex flex-col items-center justify-between relative overflow-hidden group"> <div class="absolute -right-6 -top-6 bg-yellow-400 text-amber-950 text-[10px] font-black px-8 py-1 rotate-45 uppercase shadow">Champion</div> <div class="w-full bg-amber-500 text-white text-xs font-black py-1 rounded-full mb-3 shadow">1ST PLACE</div> <!-- Gold Medal SVG --> <div class="my-2 filter drop-shadow-md group-hover:rotate-6 transition"> <svg class="w-24 h-24" viewBox="0 0 100 100"> <path d="M35 10 L50 35 L65 10 L50 22 Z" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/> <circle cx="50" cy="62" r="32" fill="#f59e0b" stroke="#b45309" stroke-width="4"/> <circle cx="50" cy="62" r="26" fill="#fef08a" stroke="#d97706" stroke-width="2" stroke-dasharray="3"/> <text x="50" y="69" font-size="28" text-anchor="middle">🥇</text> <polygon points="50,38 53,46 61,46 54,51 57,59 50,54 43,59 46,51 39,46 47,46" fill="#facc15"/> </svg> </div> <div class="text-amber-950 font-black text-lg mt-1">${tournamentState.ranks.rank1}</div> <span class="text-[11px] font-bold text-amber-800 bg-yellow-300/80 px-3 py-1 rounded-full mt-2">✨ Gold Medal Award</span> </div> <!-- 2nd Place Silver Medal Card --> <div onclick="showMedalDetail('2nd Place Silver Medal 🥈', '${tournamentState.ranks.rank2}', 'Silver', '🥈 Runner-Up Champion', 'For exceptional precision and brilliant speed in the final round!')" class="cursor-pointer bg-gradient-to-b from-slate-100 via-gray-50 to-slate-200 border-4 border-slate-300 p-4 rounded-3xl shadow-lg hover:scale-105 transition transform flex flex-col items-center justify-between relative overflow-hidden group"> <div class="w-full bg-slate-500 text-white text-xs font-black py-1 rounded-full mb-3 shadow">2ND PLACE</div> <!-- Silver Medal SVG --> <div class="my-2 filter drop-shadow-md group-hover:-rotate-6 transition"> <svg class="w-24 h-24" viewBox="0 0 100 100"> <path d="M35 10 L50 35 L65 10 L50 22 Z" fill="#3b82f6" stroke="#1d4ed8" stroke-width="2"/> <circle cx="50" cy="62" r="32" fill="#94a3b8" stroke="#475569" stroke-width="4"/> <circle cx="50" cy="62" r="26" fill="#f1f5f9" stroke="#64748b" stroke-width="2" stroke-dasharray="3"/> <text x="50" y="69" font-size="28" text-anchor="middle">🥈</text> </svg> </div> <div class="text-slate-900 font-black text-lg mt-1">${tournamentState.ranks.rank2}</div> <span class="text-[11px] font-bold text-slate-700 bg-slate-300/80 px-3 py-1 rounded-full mt-2">⭐ Silver Medal Award</span> </div> <!-- 3rd Place Bronze Medal Card --> <div onclick="showMedalDetail('3rd Place Bronze Medal 🥉', '${tournamentState.ranks.rank3}', 'Bronze', '🥉 3rd Place Winner', 'For amazing determination and fantastic performance!')" class="cursor-pointer bg-gradient-to-b from-amber-100 via-orange-50 to-amber-200 border-4 border-amber-400 p-4 rounded-3xl shadow-lg hover:scale-105 transition transform flex flex-col items-center justify-between relative overflow-hidden group"> <div class="w-full bg-amber-700 text-white text-xs font-black py-1 rounded-full mb-3 shadow">3RD PLACE</div> <!-- Bronze Medal SVG --> <div class="my-2 filter drop-shadow-md group-hover:rotate-6 transition"> <svg class="w-24 h-24" viewBox="0 0 100 100"> <path d="M35 10 L50 35 L65 10 L50 22 Z" fill="#10b981" stroke="#047857" stroke-width="2"/> <circle cx="50" cy="62" r="32" fill="#d97706" stroke="#78350f" stroke-width="4"/> <circle cx="50" cy="62" r="26" fill="#ffedd5" stroke="#b45309" stroke-width="2" stroke-dasharray="3"/> <text x="50" y="69" font-size="28" text-anchor="middle">🥉</text> </svg> </div> <div class="text-amber-950 font-black text-lg mt-1">${tournamentState.ranks.rank3}</div> <span class="text-[11px] font-bold text-amber-900 bg-amber-300/80 px-3 py-1 rounded-full mt-2">🌟 Bronze Medal Award</span> </div> <!-- 4th Place Honorary Friendship Medal Card --> <div onclick="showMedalDetail('4th Place Honorary Medal 🎖️', '${tournamentState.ranks.rank4}', 'Honorary', '🎖️ Friendship & Effort Award', 'For high enthusiasm, active participation, and great team spirit!')" class="cursor-pointer bg-gradient-to-b from-emerald-100 via-teal-50 to-emerald-200 border-4 border-emerald-300 p-4 rounded-3xl shadow-lg hover:scale-105 transition transform flex flex-col items-center justify-between relative overflow-hidden group"> <div class="w-full bg-emerald-600 text-white text-xs font-black py-1 rounded-full mb-3 shadow">4TH PLACE</div> <!-- Honorary Medal SVG --> <div class="my-2 filter drop-shadow-md group-hover:-rotate-6 transition"> <svg class="w-24 h-24" viewBox="0 0 100 100"> <path d="M35 10 L50 35 L65 10 L50 22 Z" fill="#a855f7" stroke="#6b21a8" stroke-width="2"/> <circle cx="50" cy="62" r="32" fill="#059669" stroke="#065f46" stroke-width="4"/> <circle cx="50" cy="62" r="26" fill="#ecfdf5" stroke="#10b981" stroke-width="2" stroke-dasharray="3"/> <text x="50" y="69" font-size="28" text-anchor="middle">🎖️</text> </svg> </div> <div class="text-emerald-950 font-black text-lg mt-1">${tournamentState.ranks.rank4}</div> <span class="text-[11px] font-bold text-emerald-900 bg-emerald-300/80 px-3 py-1 rounded-full mt-2">🎗️ Honorary Medal Award</span> </div> </div> </div> ` : ''} </div> `; } function showMedalDetail(medalName, teamName, type, title, desc) { playSound('fanfare'); const medalContent = ` <div class="space-y-3"> <div class="p-3 bg-amber-50 rounded-2xl border-2 border-amber-300"> <span class="text-xs font-black text-amber-800 uppercase tracking-wider block">Awarded To Representative Team:</span> <h2 class="text-2xl font-black text-indigo-900 mt-1">${teamName}</h2> <span class="inline-block bg-amber-400 text-amber-950 text-xs font-black px-3 py-1 rounded-full mt-1">${title}</span> </div> <p class="text-xs sm:text-sm text-gray-600 font-semibold leading-relaxed">${desc}</p> <div class="text-[11px] text-emerald-600 font-bold bg-emerald-50 p-2 rounded-xl border border-emerald-200"> 🏅 Keep up the brilliant spirit and continue exploring 2D shapes everywhere! </div> </div> `; showModal(medalName, medalContent, true); } function startMatch(matchIdx) { playSound('click'); tournamentState.activeMatchIndex = matchIdx; tournamentState.currentQuestionIdx = 0; // Pick 10 random questions for this match const shuffled = [...tournamentQuestions].sort(() => 0.5 - Math.random()); matchQuestionSet = shuffled.slice(0, 10); startQuestionTimer(); renderCurrentStage(); } function startQuestionTimer() { clearInterval(questionTimer); timeLeft = 10; answeringTeam = null; questionTimer = setInterval(() => { timeLeft--; const timerEl = document.getElementById('match-timer'); if (timerEl) { timerEl.innerText = timeLeft; } if (timeLeft <= 0) { clearInterval(questionTimer); playSound('wrong'); showModal("⏰ Time\\'s Up!", "No team pressed the buzzer in time! Moving to the next question.", false, advanceMatchQuestion); } }, 1000); } function renderMatchArena(container) { const match = tournamentState.matches[tournamentState.activeMatchIndex]; const q = matchQuestionSet[tournamentState.currentQuestionIdx]; container.innerHTML = ` <div class="w-full max-w-2xl flex flex-col items-center"> <div class="w-full flex justify-between items-center mb-3 px-2"> <span class="bg-indigo-600 text-white text-xs sm:text-sm font-black px-4 py-1.5 rounded-full shadow-md flex items-center gap-1.5"> <span>📌 QUESTION ${tournamentState.currentQuestionIdx + 1} OF 10</span> </span> <div class="flex items-center gap-2 bg-amber-100 border-2 border-amber-400 px-4 py-1.5 rounded-full shadow"> <span class="text-xs font-bold text-amber-900">⏱️ TIME LEFT:</span> <span id="match-timer" class="text-xl font-black text-amber-600 font-mono">${timeLeft}</span> <span class="text-xs font-bold text-amber-900">seconds</span> </div> </div> <div class="w-full bg-slate-900 text-white rounded-2xl p-4 shadow-xl mb-3 flex justify-between items-center border-4 border-amber-400 relative overflow-hidden"> <div class="text-center flex-1 z-10"> <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">${match.name}</span> <span class="text-lg sm:text-xl font-black text-red-400 block">${match.teamA}</span> <span class="text-2xl font-black text-yellow-300 font-mono">${match.scoreA} <span class="text-xs font-normal">Pts</span></span> </div> <div class="text-xl font-black text-amber-400 px-2 z-10">VS</div> <div class="text-center flex-1 z-10"> <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">${match.name}</span> <span class="text-lg sm:text-xl font-black text-blue-400 block">${match.teamB}</span> <span class="text-2xl font-black text-yellow-300 font-mono">${match.scoreB} <span class="text-xs font-normal">Pts</span></span> </div> </div> <div class="w-full bg-white border-4 border-indigo-300 rounded-3xl p-5 shadow-2xl text-center mb-4"> <div class="p-3 bg-indigo-50 border-2 border-indigo-100 rounded-2xl mb-3 flex items-center justify-center"> ${q.svg || `<span class="text-6xl bouncing">${q.icon}</span>`} </div> <h3 class="text-sm sm:text-base font-extrabold text-gray-800 mb-2 bg-slate-50 p-3 rounded-2xl border border-slate-200 leading-relaxed"> "${q.q}" </h3> <p class="text-[11px] font-bold text-indigo-600 mb-3 bg-indigo-50/80 px-3 py-1 rounded-full inline-block"> 💡 Object Clue: ${q.detail} </p> <div class="mb-4 bg-gradient-to-r from-red-50 via-amber-50 to-blue-50 p-3 rounded-2xl border-2 border-amber-300"> <p class="text-[11px] font-black text-amber-900 uppercase tracking-wider mb-2">⚡ PRESS BUZZER TO CLAIM FIRST! ⚡</p> <div class="grid grid-cols-2 gap-3"> <button onclick="pressBuzzer('${match.teamA}')" class="${answeringTeam === match.teamA ? 'ring-4 ring-yellow-400 bg-red-600 scale-105' : 'bg-red-500 hover:bg-red-600'} text-white font-black py-2.5 px-3 rounded-2xl shadow-lg transition transform hover:scale-105 flex flex-col items-center justify-center gap-0.5"> <span class="text-lg">🚨</span> <span class="text-xs sm:text-sm">${match.teamA} BUZZ!</span> </button> <button onclick="pressBuzzer('${match.teamB}')" class="${answeringTeam === match.teamB ? 'ring-4 ring-yellow-400 bg-blue-600 scale-105' : 'bg-blue-500 hover:bg-blue-600'} text-white font-black py-2.5 px-3 rounded-2xl shadow-lg transition transform hover:scale-105 flex flex-col items-center justify-center gap-0.5"> <span class="text-lg">🚨</span> <span class="text-xs sm:text-sm">${match.teamB} BUZZ!</span> </button> </div> </div> <div> <p class="text-xs font-bold text-gray-500 mb-2"> ${answeringTeam ? `👉 <span class="font-extrabold text-indigo-600">${answeringTeam}</span> team, select your answer:` : '⚠️ Press a BUZZER button above first before answering!'} </p> <div class="grid grid-cols-1 sm:grid-cols-3 gap-2"> ${q.opt.map(o => ` <button onclick="submitMatchAnswer('${o}', '${q.ans}')" ${!answeringTeam ? 'disabled' : ''} class="${answeringTeam ? 'bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer hover:scale-105' : 'bg-gray-100 text-gray-400 cursor-not-allowed'} font-black py-2.5 px-3 rounded-xl shadow transition text-xs sm:text-sm"> ${o} </button> `).join('')} </div> </div> </div> </div> `; } function pressBuzzer(teamName) { if (answeringTeam) return; playSound('click'); answeringTeam = teamName; renderCurrentStage(); } function submitMatchAnswer(selected, correct) { clearInterval(questionTimer); const match = tournamentState.matches[tournamentState.activeMatchIndex]; if (!answeringTeam) return; if (selected === correct) { playSound('correct'); const speedBonus = timeLeft * 10; const totalPoints = 100 + speedBonus; if (answeringTeam === match.teamA) match.scoreA += totalPoints; else match.scoreB += totalPoints; showModal( "Correct & Fast! 🎉", `<div class="space-y-1"> <p><span class="font-black text-emerald-600">${answeringTeam}</span> was super fast!</p> <p class="text-xs text-gray-500">Base Points: 100 | Time Bonus: +${speedBonus}</p> <p class="text-lg font-black text-amber-600">+${totalPoints} POINTS!</p> </div>`, true, advanceMatchQuestion ); } else { playSound('wrong'); if (answeringTeam === match.teamA) match.scoreA = Math.max(0, match.scoreA - 20); else match.scoreB = Math.max(0, match.scoreB - 20); showModal( "Incorrect Answer! 😅", `<p>The correct answer was <span class="font-black text-indigo-600">${correct}</span>.</p> <p class="text-xs text-red-500 font-bold mt-1">${answeringTeam} -20 Points!</p>`, false, advanceMatchQuestion ); } } function advanceMatchQuestion() { clearInterval(questionTimer); answeringTeam = null; tournamentState.currentQuestionIdx++; if (tournamentState.currentQuestionIdx >= 10) { finishCurrentMatch(); } else { startQuestionTimer(); renderCurrentStage(); } } function finishCurrentMatch() { clearInterval(questionTimer); const idx = tournamentState.activeMatchIndex; const match = tournamentState.matches[idx]; match.done = true; if (match.scoreA >= match.scoreB) { match.winner = match.teamA; match.loser = match.teamB; } else { match.winner = match.teamB; match.loser = match.teamA; } const m = tournamentState.matches; if (idx === 1) { m[2].teamA = m[0].loser; m[2].teamB = m[1].loser; m[3].teamA = m[0].winner; m[3].teamB = m[1].winner; } else if (idx === 2) { tournamentState.ranks.rank3 = m[2].winner; tournamentState.ranks.rank4 = m[2].loser; } else if (idx === 3) { tournamentState.ranks.rank1 = m[3].winner; tournamentState.ranks.rank2 = m[3].loser; if (typeof confetti === 'function') { confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } }); } playSound('fanfare'); } tournamentState.activeMatchIndex = -1; renderCurrentStage(); } // ========================================== // STAGE 5: REFLECTION & STUDENT SURVEY // ========================================== function renderStage5(container) { const totalVotes = surveyCounts.sangatSuka + surveyCounts.suka + surveyCounts.biasaSaja; const getPercent = (count) => totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0; container.innerHTML = ` <div class="w-full max-w-3xl flex flex-col items-center"> <div class="text-center mb-4"> <span class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Tahap 5: Refleksi & Survei</span> <h2 class="text-2xl sm:text-3xl font-black text-purple-900 mt-1">Refleksi Belajar Hari Ini 🌟</h2> <p class="text-gray-600 text-xs sm:text-sm">Bagaimana perasaanmu setelah belajar Bangun Datar hari ini? Isilah survei di bawah ini!</p> </div> <!-- Survey Section --> <div class="w-full bg-white border-4 border-purple-300 rounded-3xl p-5 mb-6 shadow-xl"> <h3 class="text-lg font-black text-purple-950 text-center mb-2">📊 Survei Kepuasan Siswa</h3> <p class="text-xs text-gray-500 text-center mb-4 font-semibold">Pilih salah satu sesuai dengan yang kamu rasakan:</p> <div class="grid grid-cols-3 gap-3 sm:gap-4 mb-6"> <!-- Sangat Suka --> <button onclick="submitSurveyVote('sangatSuka')" class="p-3 sm:p-4 rounded-2xl border-4 transition flex flex-col items-center justify-center text-center transform hover:scale-105 shadow-md ${selectedOptionKey === 'sangatSuka' ? 'border-emerald-500 bg-emerald-50 ring-4 ring-emerald-300 scale-105' : 'border-emerald-200 bg-emerald-50/50 hover:border-emerald-400'}"> <span class="text-4xl sm:text-5xl bouncing mb-1">😍</span> <span class="font-black text-xs sm:text-sm text-emerald-800">Sangat Suka</span> <span class="text-[10px] text-emerald-600 font-bold mt-1">Seru Banget! 🎉</span> </button> <!-- Suka --> <button onclick="submitSurveyVote('suka')" class="p-3 sm:p-4 rounded-2xl border-4 transition flex flex-col items-center justify-center text-center transform hover:scale-105 shadow-md ${selectedOptionKey === 'suka' ? 'border-sky-500 bg-sky-50 ring-4 ring-sky-300 scale-105' : 'border-sky-200 bg-sky-50/50 hover:border-sky-400'}"> <span class="text-4xl sm:text-5xl mb-1">😊</span> <span class="font-black text-xs sm:text-sm text-sky-800">Suka</span> <span class="text-[10px] text-sky-600 font-bold mt-1">Menyenangkan! 👍</span> </button> <!-- Biasa Saja --> <button onclick="submitSurveyVote('biasaSaja')" class="p-3 sm:p-4 rounded-2xl border-4 transition flex flex-col items-center justify-center text-center transform hover:scale-105 shadow-md ${selectedOptionKey === 'biasaSaja' ? 'border-amber-500 bg-amber-50 ring-4 ring-amber-300 scale-105' : 'border-amber-200 bg-amber-50/50 hover:border-amber-400'}"> <span class="text-4xl sm:text-5xl mb-1">🙂</span> <span class="font-black text-xs sm:text-sm text-amber-800">Biasa Saja</span> <span class="text-[10px] text-amber-600 font-bold mt-1">Lumayan 👌</span> </button> </div> <!-- Live Survey Results Bar --> <div class="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4"> <div class="flex justify-between items-center mb-3"> <h4 class="font-extrabold text-xs sm:text-sm text-purple-900">📈 Hasil Suara Kelas (Total: ${totalVotes} Siswa)</h4> ${userVoted ? '<span class="bg-emerald-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">Suaramu Terhitung! ✅</span>' : '<span class="text-[10px] font-bold text-purple-600">Klik tombol di atas untuk memilih</span>'} </div> <div class="space-y-3 text-xs font-bold"> <!-- Sangat Suka Progress --> <div> <div class="flex justify-between text-emerald-800 mb-1"> <span>😍 Sangat Suka (${surveyCounts.sangatSuka} murid)</span> <span>${getPercent(surveyCounts.sangatSuka)}%</span> </div> <div class="w-full bg-emerald-100 rounded-full h-3.5 overflow-hidden border border-emerald-300"> <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: ${getPercent(surveyCounts.sangatSuka)}%"></div> </div> </div> <!-- Suka Progress --> <div> <div class="flex justify-between text-sky-800 mb-1"> <span>😊 Suka (${surveyCounts.suka} murid)</span> <span>${getPercent(surveyCounts.suka)}%</span> </div> <div class="w-full bg-sky-100 rounded-full h-3.5 overflow-hidden border border-sky-300"> <div class="bg-sky-500 h-full rounded-full transition-all duration-500" style="width: ${getPercent(surveyCounts.suka)}%"></div> </div> </div> <!-- Biasa Saja Progress --> <div> <div class="flex justify-between text-amber-800 mb-1"> <span>🙂 Biasa Saja (${surveyCounts.biasaSaja} murid)</span> <span>${getPercent(surveyCounts.biasaSaja)}%</span> </div> <div class="w-full bg-amber-100 rounded-full h-3.5 overflow-hidden border border-amber-300"> <div class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: ${getPercent(surveyCounts.biasaSaja)}%"></div> </div> </div> </div> </div> </div> <div class="w-full bg-purple-50 border-3 border-purple-200 rounded-3xl p-5 mb-6 shadow-inner text-xs sm:text-sm"> <h4 class="font-extrabold text-purple-900 mb-2">💡 Rangkuman Materi Hari Ini:</h4> <ul class="list-disc list-inside space-y-1.5 text-purple-950 font-medium"> <li><strong>Lingkaran (Circle):</strong> Memiliki 1 sisi lengkung, tanpa titik sudut (contoh: jam dinding, roda).</li> <li><strong>Persegi (Square):</strong> Memiliki 4 sisi lurus sama panjang & 4 sudut (contoh: ubin, papan catur).</li> <li><strong>Persegi Panjang (Rectangle):</strong> Memiliki 2 pasang sisi sejajar sama panjang & 4 sudut (contoh: papan tulis, pintu).</li> <li><strong>Segitiga (Triangle):</strong> Memiliki 3 sisi lurus & 3 titik sudut lancip (contoh: potongan pizza, penggaris segitiga).</li> </ul> </div> <div id="certificate-card" class="w-full bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-100 border-8 border-amber-400 rounded-3xl p-6 text-center shadow-xl relative overflow-hidden"> <div class="text-4xl mb-1">🎓📜</div> <h3 class="text-xl sm:text-2xl font-black text-amber-900 uppercase tracking-widest">2D Shapes Explorer Badge</h3> <p class="text-xs font-bold text-amber-800">Diberikan kepada Siswa Cerdas Kelas 2 SD</p> <div class="my-4 border-y-2 border-dashed border-amber-400 py-3"> <p class="text-sm font-extrabold text-gray-800">Telah Menyelesaikan 5 Tahap Pembelajaran Bangun Datar</p> <p class="text-xs text-emerald-700 font-bold mt-1">Status: Siap Menjadi Master Bangun Datar! 🏆</p> </div> <div class="text-xs font-bold text-amber-900 mb-4"> 👨‍🏫 Author / Pengembang: <span class="font-extrabold text-indigo-900">Rizky Wijayanto</span> </div> <button onclick="window.print()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-black py-2.5 px-6 rounded-full text-xs shadow-md transition transform hover:scale-105"> 🖨️ Cetak / Simpan Lencana </button> </div> </div> `; } function submitSurveyVote(key) { playSound('correct'); if (userVoted && selectedOptionKey) { // Adjust previous count if changing vote surveyCounts[selectedOptionKey]--; } surveyCounts[key]++; selectedOptionKey = key; userVoted = true; let textResponse = ''; if (key === 'sangatSuka') textResponse = 'Terima kasih! Senang sekali kamu sangat menyukai pembelajaran hari ini! 😍🎉'; else if (key === 'suka') textResponse = 'Terima kasih atas suaramu! Semoga pembelajaran berikutnya makin seru! 😊✨'; else textResponse = 'Terima kasih masukannya! Kami akan terus berusaha membuat pembelajaran berikutnya lebih menarik! 🙂👍'; showModal("Terima Kasih! ❤️", textResponse, true); renderCurrentStage(); } let modalCallback = null; function showModal(title, textHTML, isSuccess, callback = null) { document.getElementById('modal-title').innerText = title; document.getElementById('modal-text').innerHTML = textHTML; document.getElementById('modal-icon').innerText = isSuccess ? "🎉" : "💡"; document.getElementById('custom-modal').classList.remove('hidden'); modalCallback = callback; } function closeModal() { playSound('click'); document.getElementById('custom-modal').classList.add('hidden'); if (modalCallback) { const cb = modalCallback; modalCallback = null; cb(); } } window.onload = function() { renderCurrentStage(); }; </script> </body> </html>""" file_name = "game_bangun_datar.html" with open(file_name, "w", encoding="utf-8") as f: f.write(html_content) print(f"Sukses! File game berhasil disimpan sebagai '{file_name}' di direktori kerja Anda.")
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Geometric Shapes - Grade 2 Elementary</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka & Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+        .font-fredoka {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+        .bounce-slow {
+            animation: bounce 3s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-5%); }
+            50% { transform: translateY(0); }
+        }
+        .pulse-subtle {
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(99, 102, 241, 0.4); }
+            50% { border-color: rgba(99, 102, 241, 1); }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="text-slate-700 flex flex-col min-h-screen">
+
+    <!-- GLOBAL HEADER -->
+    <header class="bg-white shadow-md sticky top-0 z-50 px-4 py-3 border-b-4 border-indigo-400">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-500 text-white p-2.5 rounded-2xl shadow-inner text-xl">
+                    <i class="fa-solid fa-shapes"></i>
+                </div>
+                <div>
+                    <h1 class="font-fredoka text-xl font-bold text-indigo-600 tracking-wide">Fun 2D Shapes!</h1>
+                    <p class="text-xs text-slate-500 font-medium">Grade 2 Math • Created by: <span class="text-indigo-600 font-bold">Rizky Wijayanto</span></p>
+                </div>
+            </div>
+            <!-- Navigation Tabs -->
+            <nav class="flex flex-wrap justify-center gap-1.5 sm:gap-2">
+                <button onclick="switchTab('home')" id="nav-home" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-indigo-600 text-white shadow-sm transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-house"></i> Home
+                </button>
+                <button onclick="switchTab('stage1')" id="nav-stage1" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-compass"></i> 1. Exploration
+                </button>
+                <button onclick="switchTab('stage2')" id="nav-stage2" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-puzzle-piece"></i> 2. Collaboration
+                </button>
+                <button onclick="switchTab('stage3')" id="nav-stage3" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-chalkboard-user"></i> 3. Presentation
+                </button>
+                <button onclick="switchTab('stage4')" id="nav-stage4" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-trophy text-amber-500"></i> 4. Tournament
+                </button>
+                <button onclick="switchTab('stage5')" id="nav-stage5" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-heart text-rose-500"></i> 5. Reflection
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-6xl w-full mx-auto p-4 sm:p-6">
+
+        <!-- 0. HOME / LANDING PAGE -->
+        <section id="page-home" class="tab-content">
+            <div class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-6 sm:p-12 text-white shadow-xl relative overflow-hidden my-4">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl">
+                    <i class="fa-solid fa-shapes"></i>
+                </div>
+                <div class="max-w-2xl relative z-10">
+                    <span class="bg-white/25 text-white text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider mb-4 inline-block">Interactive Learning Module</span>
+                    <h2 class="font-fredoka text-3xl sm:text-5xl font-bold mb-4 leading-tight">Recognizing 2D Geometric Shapes Around Us</h2>
+                    <p class="text-indigo-100 text-sm sm:text-base mb-6 font-medium">Let's learn about sides, angles, and everyday objects with an exciting group tournament game!</p>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="switchTab('stage1')" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-6 py-3 rounded-2xl shadow-lg transition-transform hover:scale-105 flex items-center gap-2">
+                            Start Learning <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <button onclick="switchTab('stage4')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-2xl shadow-lg transition-transform hover:scale-105 flex items-center gap-2">
+                            <i class="fa-solid fa-gamepad"></i> Go to Tournament Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-start gap-4">
+                    <div class="bg-sky-100 text-sky-600 p-4 rounded-2xl text-2xl">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-fredoka text-lg font-bold text-slate-800">Complete Lessons</h3>
+                        <p class="text-xs text-slate-500 mt-1">Explore everyday objects, deep-dive into sides and angles.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-start gap-4">
+                    <div class="bg-amber-100 text-amber-600 p-4 rounded-2xl text-2xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-fredoka text-lg font-bold text-slate-800">4 Group Tournament</h3>
+                        <p class="text-xs text-slate-500 mt-1">Preliminaries to Finals with upbeat music and buzzer rounds!</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-start gap-4">
+                    <div class="bg-rose-100 text-rose-600 p-4 rounded-2xl text-2xl">
+                        <i class="fa-solid fa-pen-nib"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-fredoka text-lg font-bold text-slate-800">Reflection & Practice</h3>
+                        <p class="text-xs text-slate-500 mt-1">Create your own simple shape sentences and review key concepts.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center text-xs text-slate-400">
+                Elementary School Interactive Module • Designed with care by <span class="font-bold text-slate-600">Rizky Wijayanto</span>
+            </div>
+        </section>
+
+        <!-- 1. STAGE 1 - EXPLORATION -->
+        <section id="page-stage1" class="tab-content hidden">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 mb-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-sky-500 text-white font-fredoka text-sm px-3 py-1 rounded-xl">Stage 1</span>
+                    <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Exploration: Shapes Around Us</h2>
+                </div>
+                <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
+                    Hello wonderful students! In our classroom and all around us, there are many everyday objects shaped like 2D geometric figures. Let's examine them!
+                </p>
+
+                <!-- Grid of Shapes -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Square -->
+                    <div class="bg-sky-50 border-2 border-sky-200 rounded-3xl p-5 text-center flex flex-col items-center hover:shadow-md transition-shadow">
+                        <div class="w-24 h-24 bg-sky-500 rounded-2xl flex items-center justify-center text-white text-4xl shadow-md mb-4 bounce-slow">
+                            <i class="fa-regular fa-square"></i>
+                        </div>
+                        <h3 class="font-fredoka text-xl font-bold text-sky-800 mb-1">Square</h3>
+                        <p class="text-xs text-slate-600 mb-3">Has 4 equal sides.</p>
+                        <div class="mt-auto bg-white px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 shadow-sm w-full border border-sky-100">
+                            <i class="fa-solid fa-box text-sky-500 mr-1"></i> Example: Floor tiles, Photo frame
+                        </div>
+                    </div>
+
+                    <!-- Rectangle -->
+                    <div class="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-5 text-center flex flex-col items-center hover:shadow-md transition-shadow">
+                        <div class="w-28 h-20 bg-emerald-500 rounded-2xl flex items-center justify-center text-white text-4xl shadow-md mb-4 bounce-slow">
+                            <i class="fa-regular fa-rectangle-xmark"></i>
+                        </div>
+                        <h3 class="font-fredoka text-xl font-bold text-emerald-800 mb-1">Rectangle</h3>
+                        <p class="text-xs text-slate-600 mb-3">Opposite sides are equal.</p>
+                        <div class="mt-auto bg-white px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 shadow-sm w-full border border-emerald-100">
+                            <i class="fa-solid fa-book text-emerald-500 mr-1"></i> Example: Blackboard, Notebook
+                        </div>
+                    </div>
+
+                    <!-- Triangle -->
+                    <div class="bg-amber-50 border-2 border-amber-200 rounded-3xl p-5 text-center flex flex-col items-center hover:shadow-md transition-shadow">
+                        <div class="w-24 h-24 bg-amber-500 rounded-xl flex items-center justify-center text-white text-3xl shadow-md mb-4 bounce-slow" style="clip-path: polygon(50% 0%, 0% 100%, 100% 100%);">
+                            <i class="fa-solid fa-caret-up opacity-0"></i>
+                        </div>
+                        <h3 class="font-fredoka text-xl font-bold text-amber-800 mb-1">Triangle</h3>
+                        <p class="text-xs text-slate-600 mb-3">Has 3 sides and 3 angles.</p>
+                        <div class="mt-auto bg-white px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 shadow-sm w-full border border-amber-100">
+                            <i class="fa-solid fa-ruler-triangle text-amber-500 mr-1"></i> Example: Triangle ruler, Road sign
+                        </div>
+                    </div>
+
+                    <!-- Circle -->
+                    <div class="bg-rose-50 border-2 border-rose-200 rounded-3xl p-5 text-center flex flex-col items-center hover:shadow-md transition-shadow">
+                        <div class="w-24 h-24 bg-rose-500 rounded-full flex items-center justify-center text-white text-4xl shadow-md mb-4 bounce-slow">
+                            <i class="fa-regular fa-circle"></i>
+                        </div>
+                        <h3 class="font-fredoka text-xl font-bold text-rose-800 mb-1">Circle</h3>
+                        <p class="text-xs text-slate-600 mb-3">Curved side with zero angles.</p>
+                        <div class="mt-auto bg-white px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 shadow-sm w-full border border-rose-100">
+                            <i class="fa-solid fa-clock text-rose-500 mr-1"></i> Example: Wall clock, Coin, Bicycle wheel
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mini Check -->
+            <div class="bg-indigo-50 border border-indigo-100 rounded-3xl p-6 text-center">
+                <h3 class="font-fredoka text-lg font-bold text-indigo-900 mb-2">Quick Guess Check!</h3>
+                <p id="exploration-question" class="text-sm text-indigo-700 mb-4">What shape is a classroom wall clock?</p>
+                <div id="exploration-options" class="flex flex-wrap justify-center gap-3">
+                    <button onclick="checkExploration('Circle', true)" class="bg-white hover:bg-indigo-600 hover:text-white text-indigo-800 font-semibold px-5 py-2.5 rounded-xl shadow-sm border border-indigo-200 transition-colors">Circle</button>
+                    <button onclick="checkExploration('Square', false)" class="bg-white hover:bg-indigo-600 hover:text-white text-indigo-800 font-semibold px-5 py-2.5 rounded-xl shadow-sm border border-indigo-200 transition-colors">Square</button>
+                    <button onclick="checkExploration('Triangle', false)" class="bg-white hover:bg-indigo-600 hover:text-white text-indigo-800 font-semibold px-5 py-2.5 rounded-xl shadow-sm border border-indigo-200 transition-colors">Triangle</button>
+                </div>
+                <p id="exploration-feedback" class="mt-3 text-sm font-bold"></p>
+            </div>
+
+            <!-- Creator Name footer -->
+            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
+                Exploration Module • Prepared by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
+            </div>
+        </section>
+
+        <!-- 2. STAGE 2 - COLLABORATION -->
+        <section id="page-stage2" class="tab-content hidden">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 mb-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-emerald-500 text-white font-fredoka text-sm px-3 py-1 rounded-xl">Stage 2</span>
+                    <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Collaboration: Solving a Simple Problem</h2>
+                </div>
+                <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
+                    Work together with your group members to solve a classroom puzzle regarding organizing objects by their geometric shapes!
+                </p>
+
+                <div class="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-6 mb-6">
+                    <div class="flex items-start gap-4">
+                        <div class="bg-emerald-500 text-white p-3 rounded-2xl text-2xl shrink-0">
+                            <i class="fa-solid fa-hands-holding-child"></i>
+                        </div>
+                        <div>
+                            <span class="bg-emerald-200 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg">Group Case Study</span>
+                            <h3 class="font-fredoka text-lg font-bold text-emerald-900 mt-2">Organizing the Math Supply Boxes</h3>
+                            <p class="text-sm text-slate-700 mt-1 leading-relaxed">
+                                Teacher asked Ben and his group to sort math teaching tools into specific storage boxes so the classroom stays neat. Help them place each item into the correct matching container!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                        <h4 class="font-fredoka font-bold text-slate-800 mb-3"><i class="fa-solid fa-list-check text-indigo-500 mr-2"></i> Choose the Right Container for:</h4>
+                        <div id="collab-item-box" class="bg-white p-4 rounded-xl border border-slate-200 text-center mb-4 shadow-sm">
+                            <span class="text-xs text-slate-400 block mb-1">Item to sort:</span>
+                            <span id="collab-current-item" class="font-fredoka text-lg font-bold text-indigo-600">Drawing Book Cover</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="checkCollab('Rectangle')" class="bg-indigo-50 hover:bg-indigo-500 hover:text-white text-indigo-700 font-semibold py-2 px-3 rounded-xl text-xs border border-indigo-200 transition-colors">Rectangle Box</button>
+                            <button onclick="checkCollab('Triangle')" class="bg-indigo-50 hover:bg-indigo-500 hover:text-white text-indigo-700 font-semibold py-2 px-3 rounded-xl text-xs border border-indigo-200 transition-colors">Triangle Box</button>
+                            <button onclick="checkCollab('Circle')" class="bg-indigo-50 hover:bg-indigo-500 hover:text-white text-indigo-700 font-semibold py-2 px-3 rounded-xl text-xs border border-indigo-200 transition-colors">Circle Box</button>
+                            <button onclick="checkCollab('Square')" class="bg-indigo-50 hover:bg-indigo-500 hover:text-white text-indigo-700 font-semibold py-2 px-3 rounded-xl text-xs border border-indigo-200 transition-colors">Square Box</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-900 text-white rounded-2xl p-5 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-fredoka font-bold text-amber-300 mb-2"><i class="fa-solid fa-lightbulb mr-2"></i> Group Discussion Notes</h4>
+                            <p id="collab-status" class="text-xs text-indigo-100 leading-relaxed">
+                                Discuss with your team: Why should a drawing book go into the rectangle box? Because its opposite sides have equal lengths!
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-indigo-800 flex justify-between items-center text-xs text-indigo-200">
+                            <span>Challenge Status: <strong id="collab-progress" class="text-emerald-400">Item 1 of 3</strong></span>
+                            <button onclick="nextCollabItem()" id="collab-next-btn" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-3 py-1.5 rounded-lg hidden">Next Item <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
+                Collaboration Module • Prepared by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
+            </div>
+        </section>
+
+        <!-- 3. STAGE 3 - COMMUNICATION & PRESENTATION -->
+        <section id="page-stage3" class="tab-content hidden">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 mb-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-amber-500 text-white font-fredoka text-sm px-3 py-1 rounded-xl">Stage 3</span>
+                    <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Communication & Presentation: Sides & Angles</h2>
+                </div>
+                <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
+                    Let's present our findings to the class! We will explore in depth the two main components of 2D shapes: <strong>Sides (Edges)</strong> and <strong>Angles (Corners)</strong>.
+                </p>
+
+                <!-- Presentation Slides Card -->
+                <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-3xl p-6 sm:p-8 relative">
+                    <div class="flex justify-between items-center mb-6">
+                        <span id="slide-number" class="bg-amber-500 text-white font-bold text-xs px-3 py-1 rounded-full font-fredoka">Slide 1 of 4</span>
+                        <div class="flex gap-2">
+                            <button onclick="prevSlide()" class="bg-white hover:bg-amber-100 text-slate-700 w-9 h-9 rounded-full shadow-sm flex items-center justify-center font-bold border border-amber-200"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button onclick="nextSlide()" class="bg-white hover:bg-amber-100 text-slate-700 w-9 h-9 rounded-full shadow-sm flex items-center justify-center font-bold border border-amber-200"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div id="slide-content-container" class="min-h-[220px] flex flex-col justify-center">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Deep Explanations -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                        <h4 class="font-fredoka text-sm font-bold text-slate-800 mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-ruler text-indigo-500"></i> What is a Side (Edge)?
+                        </h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            A side is a straight or curved line segment that forms the outer boundary of a 2D shape. For example, a square has 4 straight boundary lines.
+                        </p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                        <h4 class="font-fredoka text-sm font-bold text-slate-800 mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-angles-right text-amber-500"></i> What is an Angle (Corner)?
+                        </h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            An angle is formed where two straight sides meet at a corner point. A square has 4 corner angles where its sides join.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
+                Presentation Module • Prepared by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
+            </div>
+        </section>
+
+        <!-- 4. STAGE 4 - TOURNAMENT GAME -->
+        <section id="page-stage4" class="tab-content hidden">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 mb-6 relative">
+                
+                <!-- Music Control Bar -->
+                <div class="bg-gradient-to-r from-amber-400 via-rose-400 to-indigo-500 text-white rounded-2xl p-3 mb-6 flex flex-wrap items-center justify-between gap-3 shadow-md">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-white/20 p-2 rounded-xl text-lg"><i class="fa-solid fa-music animate-bounce"></i></div>
+                        <div>
+                            <h4 class="font-fredoka font-bold text-sm leading-tight">Energetic Tournament Audio</h4>
+                            <p class="text-[10px] text-white/80">Synthesized Retro Upbeat Loops & Sound FX</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleMusic()" id="music-toggle-btn" class="bg-white text-indigo-700 hover:bg-amber-100 font-bold px-3 py-1.5 rounded-xl text-xs shadow transition-transform hover:scale-105 flex items-center gap-1.5">
+                            <i class="fa-solid fa-volume-high" id="music-icon"></i> <span id="music-btn-text">Music: ON</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="bg-rose-500 text-white font-fredoka text-sm px-3 py-1 rounded-xl">Stage 4</span>
+                            <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Group Tournament Battle Game</h2>
+                        </div>
+                        <p class="text-slate-600 text-xs sm:text-sm">4 competing groups: <strong class="text-rose-600">Red</strong>, <strong class="text-amber-600">Yellow</strong>, <strong class="text-emerald-600">Green</strong>, and <strong class="text-slate-900">Black</strong>!</p>
+                    </div>
+                    <div id="tournament-status-badge" class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-2xl font-bold text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-flag"></i> Status: Tournament Setup Bracket
+                    </div>
+                </div>
+
+                <!-- VIEW 4A: SETUP BRACKET -->
+                <div id="tournament-setup-view" class="space-y-6">
+                    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-3xl p-6">
+                        <h3 class="font-fredoka text-lg font-bold text-indigo-900 mb-3"><i class="fa-solid fa-sitemap mr-2 text-indigo-600"></i> Tournament Bracket Structure</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                            <!-- Match 1 -->
+                            <div class="bg-white p-4 rounded-2xl border border-indigo-200 shadow-sm">
+                                <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-2">Prelim Match 1</span>
+                                <div class="flex justify-around items-center text-sm font-fredoka font-bold">
+                                    <span class="text-rose-600 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200">Red Group</span>
+                                    <span class="text-slate-400">VS</span>
+                                    <span class="text-amber-600 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">Yellow Group</span>
+                                </div>
+                                <button onclick="startMatch(1)" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl text-xs transition-colors shadow-sm">Start Match 1</button>
+                            </div>
+
+                            <!-- Match 2 -->
+                            <div class="bg-white p-4 rounded-2xl border border-indigo-200 shadow-sm">
+                                <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-2">Prelim Match 2</span>
+                                <div class="flex justify-around items-center text-sm font-fredoka font-bold">
+                                    <span class="text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">Green Group</span>
+                                    <span class="text-slate-400">VS</span>
+                                    <span class="text-slate-900 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-300">Black Group</span>
+                                </div>
+                                <button onclick="startMatch(2)" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl text-xs transition-colors shadow-sm">Start Match 2</button>
+                            </div>
+
+                            <!-- Final Match -->
+                            <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 shadow-sm flex flex-col justify-between">
+                                <div>
+                                    <span class="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-2"><i class="fa-solid fa-trophy mr-1"></i> Championship Final</span>
+                                    <div class="text-xs text-slate-600 mb-2 font-medium">Winner Match 1 vs Winner Match 2</div>
+                                </div>
+                                <button onclick="startFinalMatch()" id="final-btn" disabled class="mt-3 w-full bg-slate-300 text-slate-500 font-bold py-2 rounded-xl text-xs cursor-not-allowed transition-colors">Start Finals</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scoreboard -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-3xl p-5">
+                        <h4 class="font-fredoka text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-chart-simple text-indigo-500 mr-2"></i> Current Group Scores</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl text-center">
+                                <span class="text-xs font-bold text-rose-700 block mb-1">Red Group</span>
+                                <span id="score-red" class="font-fredoka text-2xl font-bold text-rose-600">0</span>
+                            </div>
+                            <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-center">
+                                <span class="text-xs font-bold text-amber-700 block mb-1">Yellow Group</span>
+                                <span id="score-yellow" class="font-fredoka text-2xl font-bold text-amber-600">0</span>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-center">
+                                <span class="text-xs font-bold text-emerald-700 block mb-1">Green Group</span>
+                                <span id="score-green" class="font-fredoka text-2xl font-bold text-emerald-600">0</span>
+                            </div>
+                            <div class="bg-slate-100 border border-slate-300 p-4 rounded-2xl text-center">
+                                <span class="text-xs font-bold text-slate-700 block mb-1">Black Group</span>
+                                <span id="score-black" class="font-fredoka text-2xl font-bold text-slate-800">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 4B: BATTLE ARENA (10 Questions Buzzer Rebutan) -->
+                <div id="tournament-battle-view" class="hidden space-y-6">
+                    <div class="bg-indigo-900 text-white p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div>
+                            <span id="battle-match-title" class="bg-amber-400 text-slate-900 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Prelim Match 1</span>
+                            <h3 class="font-fredoka text-lg font-bold mt-2"><span id="team-a-name">Red</span> vs <span id="team-b-name">Yellow</span></h3>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right">
+                                <span class="text-xs text-indigo-200 block">Question</span>
+                                <span class="font-fredoka text-xl font-bold text-amber-300"><span id="current-q-num">1</span> / 10</span>
+                            </div>
+                            <button onclick="exitMatchToSetup()" class="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-2 rounded-xl font-semibold transition-colors">Exit Match</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 border-2 border-indigo-100 rounded-3xl p-6 text-center">
+                        <span id="question-category" class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-lg inline-block mb-3">Sides & Angles</span>
+                        <h4 id="question-text" class="font-fredoka text-lg sm:text-xl font-bold text-slate-800 mb-6 max-w-2xl mx-auto">
+                            Question will appear here...
+                        </h4>
+
+                        <div id="buzzer-prompt-area" class="mb-6">
+                            <div class="bg-amber-100 border border-amber-300 text-amber-900 p-3 rounded-2xl text-sm font-semibold max-w-md mx-auto animate-pulse">
+                                <i class="fa-solid fa-bell mr-2"></i> READY! Which group hits the buzzer first?
+                            </div>
+                        </div>
+
+                        <div id="battle-options-area" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto hidden">
+                            <!-- Options injected by JS -->
+                        </div>
+
+                        <div id="active-buzzers-area" class="flex flex-wrap justify-center gap-4 mt-6">
+                            <!-- Buzzers injected by JS -->
+                        </div>
+
+                        <p id="battle-feedback" class="mt-4 text-sm font-bold"></p>
+                    </div>
+                </div>
+
+                <!-- VIEW 4C: MATCH RESULT / WINNER -->
+                <div id="tournament-result-view" class="hidden text-center py-8">
+                    <div class="w-20 h-20 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-inner">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <h3 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800 mb-2" id="winner-announcement">Match Winner!</h3>
+                    <p class="text-sm text-slate-600 mb-6" id="winner-details">The winning group collected the highest score with speed and accuracy.</p>
+                    <button onclick="returnToSetupAfterMatch()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-2xl shadow-md transition-transform hover:scale-105">Back to Bracket</button>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
+                Tournament Game Module • Prepared by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
+            </div>
+        </section>
+
+        <!-- 5. STAGE 5 - REFLECTION -->
+        <section id="page-stage5" class="tab-content hidden">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 mb-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-rose-500 text-white font-fredoka text-sm px-3 py-1 rounded-xl">Stage 5</span>
+                    <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Daily Learning Reflection</h2>
+                </div>
+                <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
+                    Fantastic job! We have completed our 2D shapes adventure. Now let's summarize what we learned and draft easy-to-understand shape sentences.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-rose-50 border border-rose-200 rounded-3xl p-5">
+                        <h3 class="font-fredoka text-base font-bold text-rose-900 mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-heart text-rose-500"></i> Guide to Making Shape Sentences
+                        </h3>
+                        <ul class="text-xs text-slate-700 space-y-2 list-disc list-inside">
+                            <li>Name the 2D shape (e.g., Square, Triangle).</li>
+                            <li>State the number of sides (e.g., It has 4 sides).</li>
+                            <li>State the number of angles or special feature (e.g., It has 4 right angles).</li>
+                            <li>Give an everyday object example (e.g., like a floor tile).</li>
+                        </ul>
+                        <div class="mt-4 bg-white p-3 rounded-xl border border-rose-100 text-xs font-semibold text-rose-800">
+                            <em>"Example Sentence: A notebook is shaped like a rectangle because it has 4 sides and 4 angles."</em>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50 border border-indigo-200 rounded-3xl p-5 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-fredoka text-base font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square text-indigo-600"></i> My Reflection & Sentence Draft
+                            </h3>
+                            <p class="text-xs text-slate-600 mb-3">Write your own custom shape sentence below:</p>
+                            <textarea id="reflection-input" rows="3" class="w-full p-3 rounded-2xl border border-indigo-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white" placeholder="Example: A wall clock is shaped like a circle because it has a curved side and zero angles..."></textarea>
+                        </div>
+                        <div class="mt-3 flex justify-between items-center">
+                            <button onclick="saveReflectionNote()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow-sm">Save Note</button>
+                            <span id="reflection-saved-msg" class="text-xs text-emerald-600 font-bold hidden"><i class="fa-solid fa-check mr-1"></i> Saved successfully!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-3xl p-5">
+                    <h4 class="font-fredoka text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i> Key Takeaways Today:</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm font-medium">✨ Square: 4 equal sides, 4 angles.</div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm font-medium">✨ Rectangle: 4 sides (opposite equal), 4 angles.</div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm font-medium">✨ Triangle: 3 sides and 3 angles.</div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm font-medium">✨ Circle: Curved side, zero angles.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
+                Reflection Module • Prepared by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- GLOBAL FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 text-center text-xs text-slate-500 font-medium">
+            2D Geometric Shapes Learning Module & Game • Created by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- WEB AUDIO API SYNTHESIZER FOR BACKGROUND MUSIC & SFX ---
+        let audioCtx = null;
+        let isMusicPlaying = false;
+        let musicMuted = false;
+        let bgInterval = null;
+        let noteIndex = 0;
+
+        // Upbeat Chiptune Note Sequence (Frequencies in Hz)
+        const musicNotes = [
+            261.63, 329.63, 392.00, 523.25, 392.00, 329.63,
+            293.66, 349.23, 440.00, 587.33, 440.00, 349.23,
+            329.63, 392.00, 493.88, 659.25, 493.88, 392.00,
+            349.23, 440.00, 523.25, 698.46, 523.25, 440.00
+        ];
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSynthNote(freq, duration = 0.15, type = 'square', gainVal = 0.05) {
+            if (!audioCtx || musicMuted) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function playSFX(type) {
+            initAudio();
+            if (musicMuted) return;
+            if (type === 'buzzer') {
+                playSynthNote(880, 0.1, 'sawtooth', 0.15);
+                setTimeout(() => playSynthNote(1174.66, 0.2, 'sawtooth', 0.15), 100);
+            } else if (type === 'correct') {
+                playSynthNote(523.25, 0.1, 'sine', 0.15);
+                setTimeout(() => playSynthNote(659.25, 0.1, 'sine', 0.15), 100);
+                setTimeout(() => playSynthNote(783.99, 0.25, 'sine', 0.15), 200);
+            } else if (type === 'wrong') {
+                playSynthNote(220, 0.15, 'sawtooth', 0.15);
+                setTimeout(() => playSynthNote(164.81, 0.3, 'sawtooth', 0.15), 150);
+            } else if (type === 'fanfare') {
+                [440, 554.37, 659.25, 880].forEach((f, idx) => {
+                    setTimeout(() => playSynthNote(f, 0.2, 'triangle', 0.2), idx * 120);
+                });
+            }
+        }
+
+        function startBgMusic() {
+            initAudio();
+            if (isMusicPlaying) return;
+            isMusicPlaying = true;
+            noteIndex = 0;
+            bgInterval = setInterval(() => {
+                if (!musicMuted && audioCtx) {
+                    playSynthNote(musicNotes[noteIndex], 0.12, 'square', 0.03);
+                    noteIndex = (noteIndex + 1) % musicNotes.length;
+                }
+            }, 180);
+        }
+
+        function stopBgMusic() {
+            if (bgInterval) clearInterval(bgInterval);
+            isMusicPlaying = false;
+        }
+
+        function toggleMusic() {
+            initAudio();
+            musicMuted = !musicMuted;
+            const icon = document.getElementById('music-icon');
+            const btnText = document.getElementById('music-btn-text');
+            if (musicMuted) {
+                icon.className = 'fa-solid fa-volume-xmark';
+                btnText.innerText = 'Music: OFF';
+            } else {
+                icon.className = 'fa-solid fa-volume-high';
+                btnText.innerText = 'Music: ON';
+                if (!isMusicPlaying) startBgMusic();
+            }
+        }
+
+        // --- NAVIGATION TABS ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+            });
+
+            document.getElementById('page-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.remove('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+            }
+
+            // Audio trigger logic for Tournament Tab
+            if (tabId === 'stage4') {
+                if (!musicMuted && !isMusicPlaying) startBgMusic();
+            } else {
+                stopBgMusic();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- STAGE 1: EXPLORATION MINI CHECK ---
+        function checkExploration(answer, isCorrect) {
+            const feedback = document.getElementById('exploration-feedback');
+            if(isCorrect) {
+                playSFX('correct');
+                feedback.innerHTML = '<span class="text-emerald-600"><i class="fa-solid fa-circle-check mr-1"></i> Wonderful! Correct, a wall clock is shaped like a Circle!</span>';
+            } else {
+                playSFX('wrong');
+                feedback.innerHTML = '<span class="text-rose-500"><i class="fa-solid fa-circle-xmark mr-1"></i> Not quite right, think about the shape of a wall clock!</span>';
+            }
+        }
+
+        // --- STAGE 2: COLLABORATION MINI GAME ---
+        const collabItems = [
+            { name: "Drawing Book Cover", correct: "Rectangle", desc: "Notebooks and drawing books have opposite sides equal in length." },
+            { name: "Classroom Floor Tile", correct: "Square", desc: "Floor tiles form a square with 4 equal sides." },
+            { name: "Student Triangle Ruler", correct: "Triangle", desc: "Math tool used for drawing and measuring angles." }
+        ];
+        let currentCollabIndex = 0;
+
+        function checkCollab(selectedBox) {
+            const current = collabItems[currentCollabIndex];
+            const statusEl = document.getElementById('collab-status');
+            const nextBtn = document.getElementById('collab-next-btn');
+
+            if(selectedBox === current.correct) {
+                playSFX('correct');
+                statusEl.innerHTML = `<strong class="text-emerald-300">CORRECT!</strong> ${current.name} belongs in the ${current.correct} box. ${current.desc}`;
+                if(currentCollabIndex < collabItems.length - 1) {
+                    nextBtn.classList.remove('hidden');
+                } else {
+                    nextBtn.classList.add('hidden');
+                    statusEl.innerHTML += `<br><strong class="text-amber-300">🎉 Hurray! Group collaboration challenge completed successfully!</strong>`;
+                }
+            } else {
+                playSFX('wrong');
+                statusEl.innerHTML = `<strong class="text-amber-300">TRY AGAIN!</strong> ${current.name} is not a ${selectedBox}. Discuss with your group!`;
+            }
+        }
+
+        function nextCollabItem() {
+            currentCollabIndex++;
+            if(currentCollabIndex < collabItems.length) {
+                document.getElementById('collab-current-item').innerText = collabItems[currentCollabIndex].name;
+                document.getElementById('collab-progress').innerText = `Item ${currentCollabIndex + 1} of 3`;
+                document.getElementById('collab-status').innerText = `Discuss with your group: Where should this item be stored?`;
+                document.getElementById('collab-next-btn').classList.add('hidden');
+            }
+        }
+
+        // --- STAGE 3: PRESENTATION SLIDES ---
+        const slides = [
+            {
+                title: "1. Recognizing Square",
+                icon: "fa-regular fa-square text-sky-500",
+                desc: "A square is a 2D shape that has 4 equal straight sides and 4 right-angle corners.",
+                detail: "Everyday examples: Floor tiles, chess board, gift box surface.",
+                properties: "Sides = 4 (Equal length) | Angles = 4 (Right angles)"
+            },
+            {
+                title: "2. Recognizing Rectangle",
+                icon: "fa-regular fa-rectangle-xmark text-emerald-500",
+                desc: "A rectangle has 4 sides where opposite sides are equal in length and parallel.",
+                detail: "Everyday examples: Blackboard, notebook, classroom door, windows.",
+                properties: "Sides = 4 (Opposite pairs equal) | Angles = 4 (Right angles)"
+            },
+            {
+                title: "3. Recognizing Triangle",
+                icon: "fa-solid fa-triangle-exclamation text-amber-500",
+                desc: "A triangle is a shape bounded by 3 straight line sides and has 3 corner angles.",
+                detail: "Everyday examples: Triangle ruler, triangular sandwich, warning road signs.",
+                properties: "Sides = 3 | Angles = 3"
+            },
+            {
+                title: "4. Recognizing Circle",
+                icon: "fa-regular fa-circle text-rose-500",
+                desc: "A circle is a shape with one continuous curved side and zero corner angles.",
+                detail: "Everyday examples: Wall clock, coin, bicycle wheel, dinner plate.",
+                properties: "Sides = 1 (Curved) | Angles = 0 (None)"
+            }
+        ];
+        let currentSlideIndex = 0;
+
+        function renderSlide() {
+            const slide = slides[currentSlideIndex];
+            document.getElementById('slide-number').innerText = `Slide ${currentSlideIndex + 1} of ${slides.length}`;
+            const container = document.getElementById('slide-content-container');
+            container.innerHTML = `
+                <div class="flex flex-col sm:flex-row items-center gap-6">
+                    <div class="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-3xl shadow-md flex items-center justify-center text-5xl sm:text-6xl shrink-0 border border-amber-100">
+                        <i class="${slide.icon}"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-fredoka text-xl sm:text-2xl font-bold text-slate-800 mb-2">${slide.title}</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed mb-2">${slide.desc}</p>
+                        <p class="text-xs font-bold text-indigo-600 mb-1"><i class="fa-solid fa-check-circle mr-1"></i> ${slide.detail}</p>
+                        <span class="bg-amber-200 text-amber-900 text-xs font-bold px-3 py-1 rounded-lg inline-block mt-1">${slide.properties}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function nextSlide() {
+            currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+            renderSlide();
+        }
+
+        function prevSlide() {
+            currentSlideIndex = (currentSlideIndex - 1 + slides.length) % slides.length;
+            renderSlide();
+        }
+
+        // --- STAGE 4: TOURNAMENT GAME (10 Questions in English) ---
+        const quizQuestions = [
+            { q: "Which 2D shape has 4 equal sides?", options: ["Square", "Rectangle", "Triangle", "Circle"], answer: 0 },
+            { q: "What shape is a classroom wall clock usually?", options: ["Triangle", "Circle", "Square", "Rectangle"], answer: 1 },
+            { q: "How many sides does a Triangle have?", options: ["2", "3", "4", "5"], answer: 1 },
+            { q: "The blackboard in the classroom is shaped like a...", options: ["Circle", "Square", "Rectangle", "Triangle"], answer: 2 },
+            { q: "Which shape has ZERO angles?", options: ["Square", "Triangle", "Circle", "Rectangle"], answer: 2 },
+            { q: "How many angles does a triangle ruler have?", options: ["2", "3", "4", "1"], answer: 1 },
+            { q: "The opposite sides of a Rectangle are...", options: ["Different", "Equal in length", "Curved", "Unequal"], answer: 1 },
+            { q: "A metal coin is shaped like a...", options: ["Square", "Triangle", "Circle", "Rectangle"], answer: 2 },
+            { q: "Floor tiles in rooms are usually shaped as a...", options: ["Triangle", "Square", "Circle", "Trapezoid"], answer: 1 },
+            { q: "How many angles does a Square have?", options: ["2", "3", "4", "0"], answer: 2 }
+        ];
+
+        let tournamentState = {
+            matchType: 1, // 1 for Match 1, 2 for Match 2, 3 for Finals
+            teamA: 'Red',
+            teamB: 'Yellow',
+            scoreA: 0,
+            scoreB: 0,
+            currentQ: 0,
+            activeTeam: null
+        };
+
+        let scores = { Red: 0, Yellow: 0, Green: 0, Black: 0 };
+        let matchWinners = { match1: null, match2: null };
+
+        function startMatch(matchNum) {
+            initAudio();
+            if (!isMusicPlaying && !musicMuted) startBgMusic();
+
+            tournamentState.matchType = matchNum;
+            if(matchNum === 1) {
+                tournamentState.teamA = 'Red';
+                tournamentState.teamB = 'Yellow';
+                document.getElementById('battle-match-title').innerText = "Prelim Match 1";
+            } else {
+                tournamentState.teamA = 'Green';
+                tournamentState.teamB = 'Black';
+                document.getElementById('battle-match-title').innerText = "Prelim Match 2";
+            }
+            tournamentState.scoreA = 0;
+            tournamentState.scoreB = 0;
+            tournamentState.currentQ = 0;
+            tournamentState.activeTeam = null;
+
+            document.getElementById('team-a-name').innerText = tournamentState.teamA;
+            document.getElementById('team-b-name').innerText = tournamentState.teamB;
+
+            document.getElementById('tournament-setup-view').classList.add('hidden');
+            document.getElementById('tournament-battle-view').classList.remove('hidden');
+            document.getElementById('tournament-result-view').classList.add('hidden');
+
+            loadQuestion();
+        }
+
+        function startFinalMatch() {
+            initAudio();
+            if (!isMusicPlaying && !musicMuted) startBgMusic();
+
+            tournamentState.matchType = 3;
+            tournamentState.teamA = matchWinners.match1;
+            tournamentState.teamB = matchWinners.match2;
+            tournamentState.scoreA = 0;
+            tournamentState.scoreB = 0;
+            tournamentState.currentQ = 0;
+            tournamentState.activeTeam = null;
+
+            document.getElementById('battle-match-title').innerText = "CHAMPIONSHIP FINALS!";
+            document.getElementById('team-a-name').innerText = tournamentState.teamA;
+            document.getElementById('team-b-name').innerText = tournamentState.teamB;
+
+            document.getElementById('tournament-setup-view').classList.add('hidden');
+            document.getElementById('tournament-battle-view').classList.remove('hidden');
+            document.getElementById('tournament-result-view').classList.add('hidden');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if(tournamentState.currentQ >= 10) {
+                endMatch();
+                return;
+            }
+
+            const qData = quizQuestions[tournamentState.currentQ];
+            document.getElementById('current-q-num').innerText = tournamentState.currentQ + 1;
+            document.getElementById('question-text').innerText = qData.q;
+            document.getElementById('battle-feedback').innerText = '';
+            tournamentState.activeTeam = null;
+
+            document.getElementById('buzzer-prompt-area').classList.remove('hidden');
+            document.getElementById('battle-options-area').classList.add('hidden');
+
+            const buzzerArea = document.getElementById('active-buzzers-area');
+            buzzerArea.innerHTML = `
+                <button onclick="pressBuzzer('${tournamentState.teamA}')" class="bg-rose-500 hover:bg-rose-600 text-white font-fredoka font-bold text-lg px-8 py-4 rounded-2xl shadow-lg transition-transform hover:scale-105 flex items-center gap-3 border-b-4 border-rose-700">
+                    <i class="fa-solid fa-bell"></i> ${tournamentState.teamA} Buzzer
+                </button>
+                <button onclick="pressBuzzer('${tournamentState.teamB}')" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-fredoka font-bold text-lg px-8 py-4 rounded-2xl shadow-lg transition-transform hover:scale-105 flex items-center gap-3 border-b-4 border-amber-700">
+                    <i class="fa-solid fa-bell"></i> ${tournamentState.teamB} Buzzer
+                </button>
+            `;
+        }
+
+        function pressBuzzer(teamName) {
+            playSFX('buzzer');
+            tournamentState.activeTeam = teamName;
+            document.getElementById('buzzer-prompt-area').classList.add('hidden');
+            document.getElementById('active-buzzers-area').innerHTML = `<div class="bg-indigo-100 text-indigo-800 font-bold px-4 py-2 rounded-xl text-sm"><i class="fa-solid fa-bolt mr-1"></i> <span class="text-rose-600 font-fredoka">${teamName} Group</span> buzzed first! Choose your answer:</div>`;
+
+            const qData = quizQuestions[tournamentState.currentQ];
+            const optionsArea = document.getElementById('battle-options-area');
+            optionsArea.classList.remove('hidden');
+            optionsArea.innerHTML = '';
+
+            qData.options.forEach((opt, idx) => {
+                optionsArea.innerHTML += `
+                    <button onclick="submitAnswer(${idx})" class="bg-white hover:bg-indigo-600 hover:text-white text-slate-800 font-semibold p-3 rounded-2xl border border-indigo-200 shadow-sm transition-colors text-left flex items-center justify-between">
+                        <span>${String.fromCharCode(65 + idx)}. ${opt}</span>
+                        <i class="fa-solid fa-chevron-right text-xs opacity-50"></i>
+                    </button>
+                `;
+            });
+        }
+
+        function submitAnswer(selectedIndex) {
+            const qData = quizQuestions[tournamentState.currentQ];
+            const feedback = document.getElementById('battle-feedback');
+            const isCorrect = (selectedIndex === qData.answer);
+
+            if(isCorrect) {
+                playSFX('correct');
+                feedback.innerHTML = `<span class="text-emerald-600"><i class="fa-solid fa-circle-check mr-1"></i> CORRECT! ${tournamentState.activeTeam} Group gets +10 points!</span>`;
+                if(tournamentState.activeTeam === tournamentState.teamA) tournamentState.scoreA += 10;
+                else tournamentState.scoreB += 10;
+            } else {
+                playSFX('wrong');
+                feedback.innerHTML = `<span class="text-rose-500"><i class="fa-solid fa-circle-xmark mr-1"></i> INCORRECT! Correct answer was ${String.fromCharCode(65 + qData.answer)}. ${tournamentState.activeTeam} Group gets -5 points.</span>`;
+                if(tournamentState.activeTeam === tournamentState.teamA) tournamentState.scoreA = Math.max(0, tournamentState.scoreA - 5);
+                else tournamentState.scoreB = Math.max(0, tournamentState.scoreB - 5);
+            }
+
+            document.getElementById('battle-options-area').classList.add('hidden');
+
+            setTimeout(() => {
+                tournamentState.currentQ++;
+                loadQuestion();
+            }, 2200);
+        }
+
+        function endMatch() {
+            playSFX('fanfare');
+            document.getElementById('tournament-battle-view').classList.add('hidden');
+            document.getElementById('tournament-result-view').classList.remove('hidden');
+
+            let winner = tournamentState.scoreA >= tournamentState.scoreB ? tournamentState.teamA : tournamentState.teamB;
+
+            scores[tournamentState.teamA] = tournamentState.scoreA;
+            scores[tournamentState.teamB] = tournamentState.scoreB;
+
+            document.getElementById('score-red').innerText = scores.Red;
+            document.getElementById('score-yellow').innerText = scores.Yellow;
+            document.getElementById('score-green').innerText = scores.Green;
+            document.getElementById('score-black').innerText = scores.Black;
+
+            if(tournamentState.matchType === 1) {
+                matchWinners.match1 = winner;
+                document.getElementById('winner-announcement').innerText = `Match 1 Winner: ${winner} Group!`;
+                document.getElementById('winner-details').innerText = `${winner} Group advances to the Championship Finals!`;
+            } else if(tournamentState.matchType === 2) {
+                matchWinners.match2 = winner;
+                document.getElementById('winner-announcement').innerText = `Match 2 Winner: ${winner} Group!`;
+                document.getElementById('winner-details').innerText = `${winner} Group advances to the Finals! The Finals button is now unlocked.`;
+                document.getElementById('final-btn').disabled = false;
+                document.getElementById('final-btn').classList.remove('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
+                document.getElementById('final-btn').classList.add('bg-amber-500', 'hover:bg-amber-600', 'text-slate-900', 'cursor-pointer');
+            } else {
+                document.getElementById('winner-announcement').innerText = `🏆 TOURNAMENT CHAMPION: ${winner.toUpperCase()} GROUP! 🏆`;
+                document.getElementById('winner-details').innerText = `Congratulations to ${winner} Group for incredible teamwork and speed!`;
+            }
+        }
+
+        function exitMatchToSetup() {
+            document.getElementById('tournament-battle-view').classList.add('hidden');
+            document.getElementById('tournament-setup-view').classList.remove('hidden');
+        }
+
+        function returnToSetupAfterMatch() {
+            document.getElementById('tournament-result-view').classList.add('hidden');
+            document.getElementById('tournament-setup-view').classList.remove('hidden');
+        }
+
+        // --- STAGE 5: REFLECTION ---
+        function saveReflectionNote() {
+            const note = document.getElementById('reflection-input').value.trim();
+            const msg = document.getElementById('reflection-saved-msg');
+            if(note.length > 0) {
+                playSFX('correct');
+                msg.classList.remove('hidden');
+                setTimeout(() => msg.classList.add('hidden'), 3000);
+            }
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            renderSlide();
+        };
+    </script>
+</body>
+</html>
+```
