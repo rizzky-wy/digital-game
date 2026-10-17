@@ -1,1 +1,861 @@
-welcome 🤗🤗
+
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Petualangan Pembuat Dawet Ayu Banjarnegara</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Poppins & Javanese feel decorative font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Yatra+One&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            background-color: #2c1a0e;
+            color: #333;
+        }
+        .font-javanese {
+            font-family: 'Yatra One', cursive, serif;
+        }
+        /* Custom Batik Pattern Background */
+        .bg-batik {
+            background-color: #3d2314;
+            background-image: radial-gradient(#6b3e23 15%, transparent 16%), radial-gradient(#6b3e23 15%, transparent 16%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+        .wood-texture {
+            background: linear-gradient(135deg, #8B4513, #5C2E0B);
+            border: 3px solid #3d1e07;
+        }
+        .bamboo-border {
+            border: 6px solid #859846;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .custom-btn {
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 0 #3d1e07;
+        }
+        .custom-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #3d1e07;
+        }
+        /* Floating Animation */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        /* Glass styling for dessert display */
+        .dawet-glass {
+            position: relative;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(4px);
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            border-bottom-width: 8px;
+            border-radius: 8px 8px 30px 30px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="bg-batik min-h-screen flex items-center justify-center p-2 sm:p-4 text-slate-800">
+
+    <!-- MAIN CONTAINER -->
+    <div class="relative w-full max-w-4xl bg-amber-50 rounded-2xl shadow-2xl border-4 border-amber-800/80 overflow-hidden min-h-[640px] flex flex-col justify-between">
+        
+        <!-- HEADER BAR -->
+        <header class="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-amber-100 p-3 flex justify-between items-center shadow-md z-10 border-b-2 border-amber-950">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🍹</span>
+                <div>
+                    <h1 class="font-javanese text-lg sm:text-2xl text-amber-300 tracking-wider leading-none">Dawet Ayu Banjarnegara</h1>
+                    <p class="text-[10px] sm:text-xs text-amber-200/80">Warisan Kuliner Khas Karesidenan Banyumas</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 sm:gap-4">
+                <!-- Sound Toggle -->
+                <button id="btn-sound" onclick="toggleSound()" class="w-9 h-9 bg-amber-700 hover:bg-amber-600 rounded-full flex items-center justify-center text-amber-100 shadow transition">
+                    <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+                </button>
+                <!-- Home Button -->
+                <button onclick="showScreen('screen-main-menu')" class="w-9 h-9 bg-amber-700 hover:bg-amber-600 rounded-full flex items-center justify-center text-amber-100 shadow transition">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Game Content Container -->
+        <main class="relative flex-1 flex flex-col justify-center items-center p-3 sm:p-6 overflow-x-hidden" id="main-stage">
+
+            <!-- --------------------------------------- -->
+            <!-- 1. MAIN MENU SCREEN -->
+            <!-- --------------------------------------- -->
+            <div id="screen-main-menu" class="w-full h-full flex flex-col items-center justify-center text-center space-y-6 py-4">
+                
+                <!-- Title & Puppet Display -->
+                <div class="relative flex items-center justify-center gap-4 my-2">
+                    <div class="w-20 h-28 sm:w-28 sm:h-36 bg-contain bg-no-repeat bg-center animate-float" style="background-image: url('https://placehold.co/120x180/4a2e18/fef3c7?text=SEMAR');">
+                        <div class="w-full h-full flex items-end justify-center pb-2 text-[10px] font-bold text-amber-200 bg-amber-950/40 rounded-lg">Ki Semar</div>
+                    </div>
+                    <div class="text-center px-2">
+                        <span class="inline-block px-3 py-1 bg-emerald-700 text-emerald-100 text-xs font-semibold rounded-full mb-2 shadow">Kuliner Tradisional</span>
+                        <h2 class="text-3xl sm:text-5xl font-extrabold font-javanese text-amber-900 drop-shadow-md">Pembuat Dawet Ayu</h2>
+                        <p class="text-xs sm:text-sm text-amber-800 font-medium max-w-xs mx-auto mt-1">Pelajari resep rahasia dan layani pelanggan di warung legendaris!</p>
+                    </div>
+                    <div class="w-20 h-28 sm:w-28 sm:h-36 bg-contain bg-no-repeat bg-center animate-float" style="animation-delay: 1.5s; background-image: url('https://placehold.co/120x180/4a2e18/fef3c7?text=GARENG');">
+                        <div class="w-full h-full flex items-end justify-center pb-2 text-[10px] font-bold text-amber-200 bg-amber-950/40 rounded-lg">Gareng</div>
+                    </div>
+                </div>
+
+                <!-- Mode Selection Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md px-4">
+                    <button onclick="startCookingStory()" class="flex-1 custom-btn bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-xl font-bold flex flex-col items-center gap-1 text-base border-2 border-emerald-800">
+                        <i class="fa-solid fa-utensils text-2xl mb-1"></i>
+                        <span>Mode Memasak</span>
+                        <span class="text-[11px] font-normal text-emerald-100">Simulasi Resep Otentik</span>
+                    </button>
+                    <button onclick="startArcadeMode()" class="flex-1 custom-btn bg-amber-600 hover:bg-amber-500 text-white p-4 rounded-xl font-bold flex flex-col items-center gap-1 text-base border-2 border-amber-800">
+                        <i class="fa-solid fa-store text-2xl mb-1"></i>
+                        <span>Warung Arcade</span>
+                        <span class="text-[11px] font-normal text-amber-100">Tantangan Waktu Saji</span>
+                    </button>
+                </div>
+
+                <!-- Fun Fact Pill -->
+                <div class="bg-amber-100 border border-amber-300 rounded-lg p-3 max-w-md text-xs text-amber-900 flex items-center gap-3 shadow-sm">
+                    <i class="fa-solid fa-lightbulb text-amber-600 text-xl"></i>
+                    <p class="text-left"><strong>Tahukah Kamu?</strong> Nama "Dawet Ayu" dipopulerkan oleh seni calung Banyumasan serta simbol Semar & Gareng di pikulan!</p>
+                </div>
+            </div>
+
+            <!-- --------------------------------------- -->
+            <!-- 2. STORY / COOKING SIMULATION STAGE -->
+            <!-- --------------------------------------- -->
+            <div id="screen-cooking" class="w-full flex-1 flex flex-col justify-between hidden">
+                
+                <!-- Progress Header -->
+                <div class="w-full bg-amber-200/70 rounded-xl p-2 mb-3 flex items-center justify-between border border-amber-300">
+                    <div class="flex items-center gap-2">
+                        <span id="cook-step-badge" class="bg-amber-800 text-amber-100 font-bold px-2.5 py-0.5 rounded-full text-xs">Langkah 1/6</span>
+                        <h3 id="cook-step-title" class="font-bold text-amber-900 text-sm sm:text-base">Mengekstrak Suji & Pandan</h3>
+                    </div>
+                    <div class="flex items-center gap-1 text-amber-700 text-xs font-semibold">
+                        <i class="fa-solid fa-star text-amber-500"></i> <span id="cook-score">0</span> Poin
+                    </div>
+                </div>
+
+                <!-- Interactive Game Playground Canvas/Area -->
+                <div id="cooking-playground" class="relative flex-1 bg-amber-100/60 rounded-2xl border-2 border-dashed border-amber-300 p-4 flex flex-col items-center justify-center min-h-[280px]">
+                    <!-- Dynamic Interactive Cooking Steps will load here -->
+                </div>
+
+                <!-- Guidance Footer with Wayang Puppets -->
+                <div class="mt-3 bg-amber-900/90 text-amber-100 p-3 rounded-xl flex items-center gap-3 border border-amber-950">
+                    <div class="w-12 h-12 rounded-full bg-amber-700 flex-shrink-0 flex items-center justify-center overflow-hidden border border-amber-400">
+                        <span class="text-xl">👴</span>
+                    </div>
+                    <div class="text-xs sm:text-sm">
+                        <p id="semar-dialog" class="text-amber-200 font-medium">"Ketuk daun pandan dan suji lalu tumbuk halus untuk menghasilkan warna hijau alami yang harum!"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- --------------------------------------- -->
+            <!-- 3. ARCADE WARUNG MODE STAGE -->
+            <!-- --------------------------------------- -->
+            <div id="screen-arcade" class="w-full flex-1 flex flex-col justify-between hidden">
+                
+                <!-- Top Status Bar -->
+                <div class="w-full bg-amber-900 text-amber-100 rounded-xl p-2.5 mb-2 flex justify-between items-center text-xs sm:text-sm shadow">
+                    <div>⏱️ Waktu: <span id="arcade-timer" class="font-bold text-amber-300 text-base">60</span>s</div>
+                    <div>⭐ Skor: <span id="arcade-score" class="font-bold text-yellow-400 text-base">0</span></div>
+                    <div>👥 Pembeli: <span id="arcade-customers" class="font-bold text-emerald-300 text-base">0/5</span></div>
+                </div>
+
+                <!-- Customer Orders Area -->
+                <div class="bg-amber-100 rounded-xl p-3 mb-2 border border-amber-300 flex items-center justify-between min-h-[100px]">
+                    <div class="flex items-center gap-3">
+                        <div id="customer-avatar" class="text-4xl animate-bounce">🧑</div>
+                        <div>
+                            <div class="text-xs font-bold text-amber-900" id="customer-speech">"Saya pesan 1 Dawet Ayu!"</div>
+                            <div id="customer-order-recipe" class="flex flex-wrap gap-1 mt-1">
+                                <!-- Target ingredients badges dynamically inserted -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-16 bg-amber-200 rounded-full h-3 border border-amber-400 overflow-hidden">
+                        <div id="patience-bar" class="bg-emerald-500 h-full w-full transition-all duration-200"></div>
+                    </div>
+                </div>
+
+                <!-- Serving Glass Workbench -->
+                <div class="flex-1 bg-amber-200/40 rounded-xl p-3 border-2 border-amber-300 flex items-center justify-center gap-6 my-1">
+                    
+                    <!-- Player Glass -->
+                    <div class="flex flex-col items-center">
+                        <div class="text-[10px] font-bold text-amber-800 mb-1">Gelas Racikanmu</div>
+                        <div class="dawet-glass w-24 h-40 flex flex-col-reverse justify-start p-1 relative">
+                            <div id="glass-layer-gula" class="w-full bg-amber-800/90 h-0 transition-all rounded-b-xl flex items-center justify-center text-[9px] text-amber-200 font-bold">Gula</div>
+                            <div id="glass-layer-dawet" class="w-full bg-emerald-600/90 h-0 transition-all flex items-center justify-center text-[9px] text-emerald-100 font-bold">Dawet</div>
+                            <div id="glass-layer-ice" class="w-full bg-cyan-200/80 h-0 transition-all flex items-center justify-center text-[9px] text-cyan-900 font-bold">Es</div>
+                            <div id="glass-layer-santan" class="w-full bg-amber-50/90 h-0 transition-all flex items-center justify-center text-[9px] text-amber-900 font-bold">Santan</div>
+                            <div id="glass-layer-topping" class="w-full bg-yellow-400/90 h-0 transition-all flex items-center justify-center text-[9px] text-amber-950 font-bold">Nangka</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Control Buttons -->
+                    <div class="grid grid-cols-2 gap-2 max-w-xs">
+                        <button onclick="addArcadeIngredient('gula')" class="p-2 bg-amber-800 hover:bg-amber-700 text-white rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1">🟤 Gula</button>
+                        <button onclick="addArcadeIngredient('dawet')" class="p-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1">🟢 Dawet</button>
+                        <button onclick="addArcadeIngredient('ice')" class="p-2 bg-cyan-500 hover:bg-cyan-400 text-white rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1">🧊 Es Batu</button>
+                        <button onclick="addArcadeIngredient('santan')" class="p-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1 border">🥛 Santan</button>
+                        <button onclick="addArcadeIngredient('topping')" class="p-2 bg-yellow-500 hover:bg-yellow-400 text-amber-950 rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1 col-span-2">🍍 Nangka/Durian</button>
+                    </div>
+                </div>
+
+                <!-- Serve & Reset Controls -->
+                <div class="flex gap-3 mt-2">
+                    <button onclick="resetArcadeGlass()" class="w-1/3 bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 rounded-xl text-xs shadow">Buang & Ulangi</button>
+                    <button onclick="serveArcadeGlass()" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-sm shadow border-b-4 border-emerald-800">Sajikan Ke Pembeli! ✨</button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER BRANDING -->
+        <footer class="bg-amber-950 text-amber-300 text-[10px] text-center py-2 px-4 border-t border-amber-900">
+            Dawet Ayu khas Banjarnegara - Dilestarikan melalui Permainan Edukasi Interaktif | © 2026
+        </footer>
+    </div>
+
+    <!-- --------------------------------------- -->
+    <!-- MODAL POPUP: EDUCATIONAL QUIZ & FACTS   -->
+    <!-- --------------------------------------- -->
+    <div id="modal-educational" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-amber-50 border-4 border-amber-800 rounded-2xl max-w-md w-full p-5 shadow-2xl text-center relative">
+            
+            <div class="w-16 h-16 bg-amber-200 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-amber-600 text-3xl">
+                💡
+            </div>
+
+            <h3 id="quiz-title" class="text-xl font-bold font-javanese text-amber-900 mb-2">Fakta Unik Dawet Ayu</h3>
+            <p id="quiz-fact-text" class="text-xs sm:text-sm text-slate-700 leading-relaxed mb-4 bg-amber-100 p-3 rounded-lg border border-amber-200">
+                Pandan & suji tidak hanya memberikan warna hijau cantik, tetapi juga aroma wangi alami serta kandungan antioksidan tinggi!
+            </p>
+
+            <div id="quiz-question-box" class="mb-4 text-left hidden">
+                <p id="quiz-question" class="text-xs font-bold text-amber-900 mb-2">Pertanyaan Singkat:</p>
+                <div id="quiz-options" class="space-y-2">
+                    <!-- Dynamic option buttons -->
+                </div>
+            </div>
+
+            <button id="btn-next-step" onclick="closeEducationalModal()" class="w-full custom-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm border-2 border-emerald-800">
+                Lanjut Ke Langkah Berikutnya ➡️
+            </button>
+        </div>
+    </div>
+
+    <!-- GAME LOGIC SCRIPT -->
+    <script>
+        /* -------------------------------------------------- */
+        /* AUDIO SYNTHESIZER (Web Audio API - No External Assets) */
+        /* -------------------------------------------------- */
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) { console.log(e); }
+        }
+
+        function playSoundEffect(type) {
+            if (!soundEnabled) return;
+            if (type === 'click') playTone(440, 'sine', 0.08, 0.1);
+            else if (type === 'pop') playTone(600, 'triangle', 0.1, 0.15);
+            else if (type === 'splash') playTone(220, 'sawtooth', 0.25, 0.08);
+            else if (type === 'success') {
+                playTone(523.25, 'sine', 0.15, 0.1);
+                setTimeout(() => playTone(659.25, 'sine', 0.15, 0.1), 100);
+                setTimeout(() => playTone(783.99, 'sine', 0.25, 0.1), 200);
+            } else if (type === 'fanfare') {
+                playTone(523.25, 'triangle', 0.2, 0.15);
+                setTimeout(() => playTone(659.25, 'triangle', 0.2, 0.15), 150);
+                setTimeout(() => playTone(783.99, 'triangle', 0.2, 0.15), 300);
+                setTimeout(() => playTone(1046.50, 'triangle', 0.4, 0.2), 450);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high';
+                playSoundEffect('click');
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark';
+            }
+        }
+
+        /* -------------------------------------------------- */
+        /* SCREEN MANAGEMENT & GAME STATE                    */
+        /* -------------------------------------------------- */
+        function showScreen(screenId) {
+            playSoundEffect('click');
+            ['screen-main-menu', 'screen-cooking', 'screen-arcade'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            
+            if (screenId === 'screen-main-menu') {
+                stopArcadeTimer();
+            }
+        }
+
+        /* -------------------------------------------------- */
+        /* MODE 1: COOKING STORY MODE SIMULATION             */
+        /* -------------------------------------------------- */
+        let currentStep = 1;
+        let cookingScore = 0;
+        let stepInteractiveData = {};
+
+        const stepDescriptions = [
+            { title: "Penyiapan Bahan & Pewarna Alami", semar: "Ketuk daun pandan & suji untuk menumbuknya di lumpang kayu sampai menghasilkan perasan hijau alami!" },
+            { title: "Memasak Adonan Cendol/Dawet", semar: "Aduk adonan tepung beras, tapioka, dan air pandan di atas kuali secara memutar hingga mengental!" },
+            { title: "Mencetak Dawet Ayu", semar: "Tekan cetakan dawet saat indikator berada di zona hijau agar butiran dawet jatuh sempurna ke air es!" },
+            { title: "Membuat Juruh / Gula Jawa Syrup", semar: "Iris Gula Jawa asli Banjarnegara & lelehkan bersama potongan nangka harum!" },
+            { title: "Memperoleh Santan Gurih", semar: "Peras kelapa parut dengan air matang & garam sedikit untuk santan gurih melimpah!" },
+            { title: "Penyajikan & Plating Dawet Ayu", semar: "Susun bahan-bahan di gelas secara berurutan dari gula merah hingga topping nangka lezat!" }
+        ];
+
+        function startCookingStory() {
+            currentStep = 1;
+            cookingScore = 0;
+            document.getElementById('cook-score').innerText = cookingScore;
+            showScreen('screen-cooking');
+            loadCookingStep(currentStep);
+        }
+
+        function loadCookingStep(step) {
+            document.getElementById('cook-step-badge').innerText = `Langkah ${step}/6`;
+            document.getElementById('cook-step-title').innerText = stepDescriptions[step - 1].title;
+            document.getElementById('semar-dialog').innerText = `"${stepDescriptions[step - 1].semar}"`;
+
+            const playground = document.getElementById('cooking-playground');
+            playground.innerHTML = '';
+
+            if (step === 1) renderStep1(playground);
+            else if (step === 2) renderStep2(playground);
+            else if (step === 3) renderStep3(playground);
+            else if (step === 4) renderStep4(playground);
+            else if (step === 5) renderStep5(playground);
+            else if (step === 6) renderStep6(playground);
+        }
+
+        // --- STEP 1: GRINDING LEAVES ---
+        function renderStep1(container) {
+            stepInteractiveData = { clicksLeft: 6 };
+            container.innerHTML = `
+                <div class="text-center">
+                    <div id="mortar-area" onclick="grindLeaves()" class="relative w-40 h-40 bg-amber-800 rounded-full border-8 border-amber-950 flex items-center justify-center cursor-pointer shadow-lg mx-auto">
+                        <div id="leaves-icon" class="text-5xl transition-transform transform duration-100">🌿</div>
+                        <div class="absolute bottom-2 text-[10px] text-amber-200 bg-amber-950/80 px-2 py-0.5 rounded">Ketuk Tumbuk!</div>
+                    </div>
+                    <div class="w-48 bg-gray-200 h-4 rounded-full mt-4 mx-auto overflow-hidden border">
+                        <div id="grind-bar" class="bg-emerald-500 h-full w-0 transition-all"></div>
+                    </div>
+                    <p class="text-xs text-amber-900 mt-2 font-semibold">Tumbukan Selesai: <span id="grind-count">0</span>/6</p>
+                </div>
+            `;
+        }
+
+        function grindLeaves() {
+            if (stepInteractiveData.clicksLeft <= 0) return;
+            stepInteractiveData.clicksLeft--;
+            playSoundEffect('pop');
+
+            const count = 6 - stepInteractiveData.clicksLeft;
+            document.getElementById('grind-count').innerText = count;
+            document.getElementById('grind-bar').style.width = `${(count / 6) * 100}%`;
+            
+            const icon = document.getElementById('leaves-icon');
+            icon.style.transform = 'scale(1.3) rotate(15deg)';
+            setTimeout(() => icon.style.transform = 'scale(1) rotate(0deg)', 100);
+
+            if (stepInteractiveData.clicksLeft === 0) {
+                playSoundEffect('success');
+                addCookingPoints(150);
+                setTimeout(() => {
+                    showEducationalModal(
+                        "Pewarna Alami Suji & Pandan",
+                        "Masyarakat Banjarnegara menggunakan kombinasi daun suji untuk menghasilkan warna hijau pekat yang cantik, serta daun pandan wangi untuk aroma harum semerbak alami tanpa pewarna buatan!",
+                        "Apa fungsi utama daun pandan dalam pembuatan dawet?",
+                        ["Memberi rasa asin", "Memberikan aroma harum alami", "Membuat tekstur keras"],
+                        1
+                    );
+                }, 500);
+            }
+        }
+
+        // --- STEP 2: STIRRING CENDOL ---
+        function renderStep2(container) {
+            stepInteractiveData = { progress: 0 };
+            container.innerHTML = `
+                <div class="text-center">
+                    <div class="relative w-44 h-44 bg-slate-800 rounded-full border-4 border-slate-600 flex items-center justify-center mx-auto shadow-inner">
+                        <div id="cendol-pot" class="w-36 h-36 rounded-full bg-emerald-800/40 border-2 border-emerald-500 flex items-center justify-center relative overflow-hidden">
+                            <div id="stir-paddle" class="text-4xl cursor-pointer select-none" onclick="stirPaste()">🥄</div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-amber-900 mt-3 font-semibold">Ketuk sendok untuk mengaduk adonan cendol kental!</p>
+                    <div class="w-48 bg-gray-200 h-3 rounded-full mt-2 mx-auto overflow-hidden">
+                        <div id="stir-bar" class="bg-emerald-600 h-full w-0 transition-all"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function stirPaste() {
+            if (stepInteractiveData.progress >= 100) return;
+            stepInteractiveData.progress += 12;
+            playSoundEffect('pop');
+
+            const paddle = document.getElementById('stir-paddle');
+            paddle.style.transform = `rotate(${stepInteractiveData.progress * 3.6}deg) scale(1.2)`;
+            document.getElementById('stir-bar').style.width = `${Math.min(100, stepInteractiveData.progress)}%`;
+
+            if (stepInteractiveData.progress >= 100) {
+                playSoundEffect('success');
+                addCookingPoints(150);
+                setTimeout(() => {
+                    showEducationalModal(
+                        "Kombinasi Tepung Beras & Tapioka",
+                        "Rahasia kekenyalan dawet ayu khas Banjarnegara terletak pada campuran tepung beras (memberikan rasa lembut) dan tepung tapioka/aren (memberikan kenyal pas yang khas)!",
+                        "Tepung apakah yang memberikan tekstur kenyal pada dawet?",
+                        ["Tepung Tapioka/Aren", "Tepung Terigu", "Tepung Bumbu"],
+                        0
+                    );
+                }, 500);
+            }
+        }
+
+        // --- STEP 3: EXTRUDING DAWET (TIMING BAR) ---
+        function renderStep3(container) {
+            stepInteractiveData = { drops: 0 };
+            container.innerHTML = `
+                <div class="text-center w-full max-w-xs">
+                    <div class="text-3xl mb-2">🥣 ❄️</div>
+                    <p class="text-xs font-bold text-amber-900 mb-3">Tekan tombol saat jarum berada di area hijau!</p>
+                    
+                    <!-- Timing Bar -->
+                    <div class="relative w-full h-8 bg-gray-300 rounded-full overflow-hidden border-2 border-amber-800 mb-4">
+                        <div class="absolute left-[40%] w-[20%] h-full bg-emerald-500"></div>
+                        <div id="timing-needle" class="absolute top-0 bottom-0 w-2 bg-red-600 left-0 transition-none"></div>
+                    </div>
+
+                    <button onclick="pressDawet()" class="custom-btn bg-amber-700 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl text-sm">
+                        TEKAN CETAKAN! 🎯
+                    </button>
+                    <p class="text-xs text-amber-900 mt-2">Butir Dawet Terkumpul: <span id="drop-count">0</span>/3</p>
+                </div>
+            `;
+
+            // Start Needle Loop
+            let pos = 0;
+            let dir = 2;
+            stepInteractiveData.interval = setInterval(() => {
+                pos += dir;
+                if (pos >= 96 || pos <= 0) dir *= -1;
+                const needle = document.getElementById('timing-needle');
+                if (needle) needle.style.left = pos + '%';
+                stepInteractiveData.pos = pos;
+            }, 20);
+        }
+
+        function pressDawet() {
+            const pos = stepInteractiveData.pos;
+            // Green zone is 40% to 60%
+            if (pos >= 38 && pos <= 62) {
+                playSoundEffect('splash');
+                stepInteractiveData.drops++;
+                document.getElementById('drop-count').innerText = stepInteractiveData.drops;
+                if (stepInteractiveData.drops >= 3) {
+                    clearInterval(stepInteractiveData.interval);
+                    playSoundEffect('success');
+                    addCookingPoints(200);
+                    setTimeout(() => {
+                        showEducationalModal(
+                            "Cetakan Tradisional Dawet",
+                            "Adonan cendol panas ditekan melalui cetakan berlubang langsung ke dalam baskom berisi air es mendingin seketika agar bentuk butiran dawet tidak lengket dan kenyal sempurna!",
+                            "Mengapa adonan dawet dicetak langsung ke dalam air es?",
+                            ["Agar warnanya memudar", "Agar dawet seketika mengeras & tidak lengket", "Agar dawet mengapung tinggi"],
+                            1
+                        );
+                    }, 500);
+                }
+            } else {
+                playSoundEffect('click');
+            }
+        }
+
+        // --- STEP 4: GULA JAWA SYRUP ---
+        function renderStep4(container) {
+            container.innerHTML = `
+                <div class="text-center">
+                    <div class="w-32 h-32 bg-amber-900 rounded-xl mx-auto flex items-center justify-center text-5xl shadow-md border-4 border-amber-950 mb-3">
+                        🍯
+                    </div>
+                    <p class="text-xs font-bold text-amber-900 mb-3">Iris Gula Jawa Banjarnegara & potong buah nangka!</p>
+                    <button onclick="sliceSugar()" id="btn-slice" class="custom-btn bg-amber-700 hover:bg-amber-600 text-white font-bold py-2.5 px-5 rounded-xl text-xs">
+                        Iris Gula Merah (0/3) 🔪
+                    </button>
+                </div>
+            `;
+            stepInteractiveData = { slices: 0 };
+        }
+
+        function sliceSugar() {
+            stepInteractiveData.slices++;
+            playSoundEffect('pop');
+            const btn = document.getElementById('btn-slice');
+            btn.innerText = `Iris Gula Merah (${stepInteractiveData.slices}/3) 🔪`;
+            if (stepInteractiveData.slices >= 3) {
+                playSoundEffect('success');
+                addCookingPoints(150);
+                setTimeout(() => {
+                    showEducationalModal(
+                        "Gula Jawa Asli Banjarnegara",
+                        "Gula Jawa berkualitas tinggi diproduksi dari nira pohon kelapa murni di Banjarnegara. Penambahan irisan buah nangka atau durian pada juruh memberikan aroma gurih manis legendaris!",
+                        "Bahan alami apakah yang memberikan rasa manis khas pada juruh Dawet Ayu?",
+                        ["Gula Jawa / Gula Aren", "Pemanis Buatan", "Sirup Jagung"],
+                        0
+                    );
+                }, 500);
+            }
+        }
+
+        // --- STEP 5: SANTAN PREPARATION ---
+        function renderStep5(container) {
+            container.innerHTML = `
+                <div class="text-center">
+                    <div class="w-36 h-36 bg-amber-100 rounded-full mx-auto border-4 border-amber-300 flex items-center justify-center text-5xl shadow mb-3">
+                        🥥
+                    </div>
+                    <p class="text-xs font-bold text-amber-900 mb-3">Peras kelapa parut untuk menghasilkan santan gurih!</p>
+                    <button onclick="squeezeSantan()" id="btn-santan" class="custom-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-5 rounded-xl text-xs">
+                        Peras Santan (0/4) 💧
+                    </button>
+                </div>
+            `;
+            stepInteractiveData = { squeezes: 0 };
+        }
+
+        function squeezeSantan() {
+            stepInteractiveData.squeezes++;
+            playSoundEffect('splash');
+            const btn = document.getElementById('btn-santan');
+            btn.innerText = `Peras Santan (${stepInteractiveData.squeezes}/4) 💧`;
+            if (stepInteractiveData.squeezes >= 4) {
+                playSoundEffect('success');
+                addCookingPoints(150);
+                setTimeout(() => {
+                    showEducationalModal(
+                        "Santan Gurih Segar",
+                        "Santan segar dimasak dengan sedikit garam dan helai daun pandan dengan api kecil sambil terus diaduk agar santan tidak 'pecah' dan rasa gurihnya menyatu sempurna!",
+                        "Bagaimana cara memasak santan agar kualitasnya tetap terjaga?",
+                        ["Dimasak api besar tanpa diaduk", "Dimasak api kecil sambil terus diaduk", "Dicampur cuka"],
+                        1
+                    );
+                }, 500);
+            }
+        }
+
+        // --- STEP 6: PLATING DAWET AYU ---
+        function renderStep6(container) {
+            stepInteractiveData = { layers: [] };
+            container.innerHTML = `
+                <div class="text-center w-full">
+                    <p class="text-xs font-bold text-amber-900 mb-2">Susun racikan Dawet Ayu sesuai urutan tradisional!</p>
+                    <div class="flex justify-center items-center gap-4 my-2">
+                        <div class="dawet-glass w-20 h-36 flex flex-col-reverse justify-start p-1">
+                            <div id="step6-gula" class="w-full bg-amber-800 h-0 transition-all text-[8px] text-amber-100 font-bold flex items-center justify-center">Gula</div>
+                            <div id="step6-dawet" class="w-full bg-emerald-600 h-0 transition-all text-[8px] text-emerald-100 font-bold flex items-center justify-center">Dawet</div>
+                            <div id="step6-es" class="w-full bg-cyan-300 h-0 transition-all text-[8px] text-cyan-900 font-bold flex items-center justify-center">Es</div>
+                            <div id="step6-santan" class="w-full bg-amber-50 h-0 transition-all text-[8px] text-amber-900 font-bold flex items-center justify-center">Santan</div>
+                            <div id="step6-nangka" class="w-full bg-yellow-400 h-0 transition-all text-[8px] text-amber-950 font-bold flex items-center justify-center">Nangka</div>
+                        </div>
+                        <div class="grid grid-cols-1 gap-1.5 text-left">
+                            <button onclick="addPlatingLayer('gula')" class="px-3 py-1.5 bg-amber-800 text-white rounded text-xs font-bold shadow">1. Juruh Gula Jawa</button>
+                            <button onclick="addPlatingLayer('dawet')" class="px-3 py-1.5 bg-emerald-600 text-white rounded text-xs font-bold shadow">2. Cendol Dawet</button>
+                            <button onclick="addPlatingLayer('es')" class="px-3 py-1.5 bg-cyan-500 text-white rounded text-xs font-bold shadow">3. Es Batu</button>
+                            <button onclick="addPlatingLayer('santan')" class="px-3 py-1.5 bg-stone-200 text-slate-800 rounded text-xs font-bold shadow">4. Santan Gurih</button>
+                            <button onclick="addPlatingLayer('nangka')" class="px-3 py-1.5 bg-yellow-500 text-amber-950 rounded text-xs font-bold shadow">5. Topping Nangka</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addPlatingLayer(type) {
+            playSoundEffect('pop');
+            if (type === 'gula') document.getElementById('step6-gula').style.height = '20%';
+            if (type === 'dawet') document.getElementById('step6-dawet').style.height = '25%';
+            if (type === 'es') document.getElementById('step6-es').style.height = '15%';
+            if (type === 'santan') document.getElementById('step6-santan').style.height = '25%';
+            if (type === 'nangka') document.getElementById('step6-nangka').style.height = '15%';
+
+            if (!stepInteractiveData.layers.includes(type)) {
+                stepInteractiveData.layers.push(type);
+            }
+
+            if (stepInteractiveData.layers.length >= 5) {
+                playSoundEffect('fanfare');
+                addCookingPoints(200);
+                setTimeout(() => {
+                    showEducationalModal(
+                        "Selamat! Dawet Ayu Siap Disajikan! 🎉",
+                        "Kamu telah berhasil mempelajari seluruh tahapan otentik pembuatan Dawet Ayu Banjarnegara! Kombinasi rasa manis legit, gurih santan, dan kenyalnya dawet alami siap memanjakan lidah.",
+                        "Apa arti filosofis figur Semar & Gareng pada gerobak Dawet Ayu?",
+                        ["Simbol 'Dawai' (Dawet) dan 'Ayu' (Ayu/Laris)", "Hanya hiasan semata", "Simbol raja zaman dahulu"],
+                        0
+                    );
+                }, 500);
+            }
+        }
+
+        function addCookingPoints(pts) {
+            cookingScore += pts;
+            document.getElementById('cook-score').innerText = cookingScore;
+        }
+
+        /* -------------------------------------------------- */
+        /* EDUCATIONAL MODAL & QUIZ CONTROLLER               */
+        /* -------------------------------------------------- */
+        let currentQuizCorrect = 0;
+
+        function showEducationalModal(title, fact, question, options, correctIdx) {
+            document.getElementById('quiz-title').innerText = title;
+            document.getElementById('quiz-fact-text').innerText = fact;
+
+            const qBox = document.getElementById('quiz-question-box');
+            const optContainer = document.getElementById('quiz-options');
+            optContainer.innerHTML = '';
+
+            if (question) {
+                qBox.classList.remove('hidden');
+                document.getElementById('quiz-question').innerText = question;
+                currentQuizCorrect = correctIdx;
+
+                options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-2 text-xs bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-lg font-medium text-amber-900 transition";
+                    btn.innerText = `${idx + 1}. ${opt}`;
+                    btn.onclick = () => answerQuiz(idx, btn);
+                    optContainer.appendChild(btn);
+                });
+            } else {
+                qBox.classList.add('hidden');
+            }
+
+            document.getElementById('modal-educational').classList.remove('hidden');
+        }
+
+        function answerQuiz(selectedIdx, btnEl) {
+            if (selectedIdx === currentQuizCorrect) {
+                playSoundEffect('success');
+                btnEl.className = "w-full text-left p-2 text-xs bg-emerald-500 text-white rounded-lg font-bold";
+                addCookingPoints(100);
+            } else {
+                playSoundEffect('click');
+                btnEl.className = "w-full text-left p-2 text-xs bg-rose-500 text-white rounded-lg font-bold";
+            }
+            // Disable options after answer
+            const buttons = document.querySelectorAll('#quiz-options button');
+            buttons.forEach(b => b.onclick = null);
+        }
+
+        function closeEducationalModal() {
+            playSoundEffect('click');
+            document.getElementById('modal-educational').classList.add('hidden');
+            
+            if (currentStep < 6) {
+                currentStep++;
+                loadCookingStep(currentStep);
+            } else {
+                // Game Finished -> Back to menu
+                showScreen('screen-main-menu');
+            }
+        }
+
+        /* -------------------------------------------------- */
+        /* MODE 2: WARUNG ARCADE MODE (TIME-ATTACK)          */
+        /* -------------------------------------------------- */
+        let arcadeTimer = 60;
+        let arcadeScore = 0;
+        let customerCount = 0;
+        let timerInterval = null;
+        let currentOrder = [];
+        let currentGlassLayers = [];
+
+        const customerAvatars = ['👨', '👩', '👵', '👴', '🧑‍🦱'];
+        const possibleIngredients = ['gula', 'dawet', 'ice', 'santan', 'topping'];
+
+        function startArcadeMode() {
+            arcadeTimer = 60;
+            arcadeScore = 0;
+            customerCount = 0;
+            document.getElementById('arcade-timer').innerText = arcadeTimer;
+            document.getElementById('arcade-score').innerText = arcadeScore;
+            document.getElementById('arcade-customers').innerText = `${customerCount}/5`;
+            
+            showScreen('screen-arcade');
+            resetArcadeGlass();
+            spawnNewCustomer();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                arcadeTimer--;
+                document.getElementById('arcade-timer').innerText = arcadeTimer;
+                if (arcadeTimer <= 0) {
+                    endArcadeGame();
+                }
+            }, 1000);
+        }
+
+        function stopArcadeTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+        }
+
+        function spawnNewCustomer() {
+            if (customerCount >= 5) {
+                endArcadeGame();
+                return;
+            }
+
+            const randAvatar = customerAvatars[Math.floor(Math.random() * customerAvatars.length)];
+            document.getElementById('customer-avatar').innerText = randAvatar;
+
+            // Generate Random Order Recipe (3 to 5 ingredients required)
+            const recipeLength = 3 + Math.floor(Math.random() * 3);
+            currentOrder = [];
+            
+            // Standard order usually starts with gula & dawet
+            currentOrder.push('gula', 'dawet');
+            while (currentOrder.length < recipeLength) {
+                const randIng = possibleIngredients[Math.floor(Math.random() * possibleIngredients.length)];
+                if (!currentOrder.includes(randIng)) {
+                    currentOrder.push(randIng);
+                }
+            }
+
+            // Render Recipe Badges
+            const recipeBox = document.getElementById('customer-order-recipe');
+            recipeBox.innerHTML = '';
+            currentOrder.forEach(ing => {
+                const badge = document.createElement('span');
+                badge.className = "px-2 py-0.5 text-[10px] rounded font-bold text-white shadow-sm " + getIngredientBadgeColor(ing);
+                badge.innerText = ing.toUpperCase();
+                recipeBox.appendChild(badge);
+            });
+
+            document.getElementById('customer-speech').innerText = `"Tolong buatkan Dawet Ayu sesuai pesanan ya!"`;
+            resetArcadeGlass();
+        }
+
+        function getIngredientBadgeColor(ing) {
+            if (ing === 'gula') return 'bg-amber-800';
+            if (ing === 'dawet') return 'bg-emerald-600';
+            if (ing === 'ice') return 'bg-cyan-500';
+            if (ing === 'santan') return 'bg-slate-400';
+            if (ing === 'topping') return 'bg-yellow-500';
+            return 'bg-gray-500';
+        }
+
+        function addArcadeIngredient(ing) {
+            playSoundEffect('pop');
+            if (currentGlassLayers.length >= 5) return;
+
+            currentGlassLayers.push(ing);
+            updateGlassVisuals();
+        }
+
+        function updateGlassVisuals() {
+            // Reset height first
+            ['gula', 'dawet', 'ice', 'santan', 'topping'].forEach(id => {
+                document.getElementById(`glass-layer-${id}`).style.height = '0px';
+            });
+
+            currentGlassLayers.forEach(ing => {
+                const el = document.getElementById(`glass-layer-${ing}`);
+                if (el) el.style.height = '24px';
+            });
+        }
+
+        function resetArcadeGlass() {
+            playSoundEffect('click');
+            currentGlassLayers = [];
+            updateGlassVisuals();
+        }
+
+        function serveArcadeGlass() {
+            // Check if user glass matches current order
+            const isMatch = currentOrder.length === currentGlassLayers.length &&
+                currentOrder.every((val, index) => currentGlassLayers.includes(val));
+
+            if (isMatch) {
+                playSoundEffect('success');
+                arcadeScore += 200 + (arcadeTimer * 2);
+                customerCount++;
+                document.getElementById('arcade-score').innerText = arcadeScore;
+                document.getElementById('arcade-customers').innerText = `${customerCount}/5`;
+                
+                spawnNewCustomer();
+            } else {
+                playSoundEffect('click');
+                document.getElementById('customer-speech').innerText = `"Wah, bahan racikannya kurang pas nih!"`;
+            }
+        }
+
+        function endArcadeGame() {
+            stopArcadeTimer();
+            playSoundEffect('fanfare');
+            showEducationalModal(
+                "Warung Selesai Dilayani! 🏪",
+                `Luar biasa! Kamu berhasil mendapatkan total skor ${arcadeScore} Poin di Warung Dawet Ayu Banjarnegara! Tarik pelanggan lebih banyak lagi dengan melayani dengan cepat!`,
+                null, [], 0
+            );
+        }
+    </script>
+</body>
+</html>
+```
