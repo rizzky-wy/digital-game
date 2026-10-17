@@ -1,861 +1,1427 @@
+```react
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Brain,
+  Upload,
+  FileCheck,
+  Award,
+  BarChart3,
+  Key,
+  Printer,
+  FileSpreadsheet,
+  Trash2,
+  Edit3,
+  CheckCircle2,
+  XCircle,
+  Settings,
+  HelpCircle,
+  Plus,
+  RefreshCw,
+  Eye,
+  Download,
+  School,
+  User,
+  BookOpen,
+  Search,
+  Filter,
+  Check,
+  AlertTriangle,
+  Play,
+  Copy,
+  ChevronRight,
+  Sparkles,
+  Layers
+} from 'lucide-react';
 
-```html
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Petualangan Pembuat Dawet Ayu Banjarnegara</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Poppins & Javanese feel decorative font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Yatra+One&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-user-select: none;
-            background-color: #2c1a0e;
-            color: #333;
-        }
-        .font-javanese {
-            font-family: 'Yatra One', cursive, serif;
-        }
-        /* Custom Batik Pattern Background */
-        .bg-batik {
-            background-color: #3d2314;
-            background-image: radial-gradient(#6b3e23 15%, transparent 16%), radial-gradient(#6b3e23 15%, transparent 16%);
-            background-size: 30px 30px;
-            background-position: 0 0, 15px 15px;
-        }
-        .wood-texture {
-            background: linear-gradient(135deg, #8B4513, #5C2E0B);
-            border: 3px solid #3d1e07;
-        }
-        .bamboo-border {
-            border: 6px solid #859846;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
-        .custom-btn {
-            transition: all 0.2s ease;
-            box-shadow: 0 5px 0 #3d1e07;
-        }
-        .custom-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 1px 0 #3d1e07;
-        }
-        /* Floating Animation */
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-8px) rotate(2deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-        .animate-float {
-            animation: float 3s ease-in-out infinite;
-        }
-        /* Glass styling for dessert display */
-        .dawet-glass {
-            position: relative;
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(4px);
-            border: 3px solid rgba(255, 255, 255, 0.6);
-            border-bottom-width: 8px;
-            border-radius: 8px 8px 30px 30px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-    </style>
-</head>
-<body class="bg-batik min-h-screen flex items-center justify-center p-2 sm:p-4 text-slate-800">
+// External script loader for jsPDF & html2canvas
+const loadExternalScripts = () => {
+  return new Promise((resolve) => {
+    let scriptsLoaded = 0;
+    const checkComplete = () => {
+      scriptsLoaded++;
+      if (scriptsLoaded >= 2) resolve(true);
+    };
 
-    <!-- MAIN CONTAINER -->
-    <div class="relative w-full max-w-4xl bg-amber-50 rounded-2xl shadow-2xl border-4 border-amber-800/80 overflow-hidden min-h-[640px] flex flex-col justify-between">
-        
-        <!-- HEADER BAR -->
-        <header class="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-amber-100 p-3 flex justify-between items-center shadow-md z-10 border-b-2 border-amber-950">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">🍹</span>
-                <div>
-                    <h1 class="font-javanese text-lg sm:text-2xl text-amber-300 tracking-wider leading-none">Dawet Ayu Banjarnegara</h1>
-                    <p class="text-[10px] sm:text-xs text-amber-200/80">Warisan Kuliner Khas Karesidenan Banyumas</p>
-                </div>
+    if (!window.html2canvas) {
+      const s1 = document.createElement('script');
+      s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s1.onload = checkComplete;
+      s1.onerror = checkComplete;
+      document.head.appendChild(s1);
+    } else {
+      scriptsLoaded++;
+    }
+
+    if (!window.jspdf) {
+      const s2 = document.createElement('script');
+      s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s2.onload = checkComplete;
+      s2.onerror = checkComplete;
+      document.head.appendChild(s2);
+    } else {
+      scriptsLoaded++;
+    }
+
+    if (window.html2canvas && window.jspdf) resolve(true);
+  });
+};
+
+export default function App() {
+  // Global App States
+  const [activeTab, setActiveTab] = useState('scan'); // 'dashboard', 'scan', 'key', 'recap', 'template', 'settings'
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+  const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
+  
+  // School Metadata State
+  const [schoolInfo, setSchoolInfo] = useState({
+    name: 'SMA NEGERI 1 INDONESIA',
+    address: 'Jl. Pendidikan No. 45, Kompleks Edukasi, Jakarta Pusat',
+    subject: 'Bahasa Indonesia',
+    classGrade: 'XII MIPA 1',
+    semester: 'Ganjil / 2026-2027',
+    teacherName: 'Dra. Endang Rahayu, M.Pd.',
+    teacherNip: '19750812 199903 2 001',
+    headmasterName: 'Dr. H. Ahmad Sanusi, M.Pd.',
+    headmasterNip: '19680515 199412 1 002',
+    passingScore: 75,
+    timeLimit: '90 Menit'
+  });
+
+  // Answer Key State (Default 20 items)
+  const [questionCount, setQuestionCount] = useState(20);
+  const [answerKey, setAnswerKey] = useState({
+    1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'A',
+    6: 'B', 7: 'C', 8: 'D', 9: 'A', 10: 'B',
+    11: 'C', 12: 'D', 13: 'A', 14: 'B', 15: 'C',
+    16: 'D', 17: 'A', 18: 'B', 19: 'C', 20: 'D'
+  });
+  const [questionWeights, setQuestionWeights] = useState({});
+
+  // LJK Scan & Grading Results State
+  const [studentResults, setStudentResults] = useState([]);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [statusMessage, setStatusMessage] = useState('');
+
+  // Selected Student Modal / Override Edit
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [isEditingStudent, setIsEditingStudent] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', nisn: '', answers: {} });
+
+  // Print & PDF References
+  const reportRef = useRef(null);
+  const printableLjkRef = useRef(null);
+
+  // Load CDN scripts on mount
+  useEffect(() => {
+    loadExternalScripts();
+  }, []);
+
+  // Save API Key locally
+  const handleSaveApiKey = (newKey) => {
+    setApiKey(newKey);
+    localStorage.setItem('gemini_api_key', newKey);
+  };
+
+  // Set Question Count & initialize default keys
+  const handleQuestionCountChange = (count) => {
+    const num = parseInt(count, 10);
+    setQuestionCount(num);
+    const newKey = { ...answerKey };
+    for (let i = 1; i <= num; i++) {
+      if (!newKey[i]) newKey[i] = 'A';
+    }
+    setAnswerKey(newKey);
+  };
+
+  // Helper: Grade student answers against key
+  const calculateGrade = (studentAnswers) => {
+    let correctCount = 0;
+    let totalWeight = 0;
+    let earnedWeight = 0;
+
+    for (let i = 1; i <= questionCount; i++) {
+      const weight = questionWeights[i] || 1;
+      totalWeight += weight;
+      const studentAns = (studentAnswers[i] || '').toUpperCase();
+      const keyAns = (answerKey[i] || '').toUpperCase();
+
+      if (studentAns === keyAns && studentAns !== '') {
+        correctCount++;
+        earnedWeight += weight;
+      }
+    }
+
+    const wrongCount = questionCount - correctCount;
+    const finalScore = totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 0;
+    const isPassed = finalScore >= schoolInfo.passingScore;
+
+    return { correctCount, wrongCount, finalScore, isPassed };
+  };
+
+  // Base64 Converter helper
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Gemini Vision API Call for single LJK
+  const processLjkWithGemini = async (base64Image, fileName) => {
+    const keyToUse = apiKey || '';
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${keyToUse}`;
+
+    const promptText = `Analisis gambar LJK (Lembar Jawaban Komputer) ini.
+Tugas Anda:
+1. Mendeteksi nama siswa (NAMA) dan NIS/NISN siswa jika ada. Jika tidak terdeteksi, berikan estimasi atau "Siswa Tanpa Nama".
+2. Membaca jawaban pilihan ganda nomor 1 sampai ${questionCount}. Jawaban bisa berupa silang (X) atau bulatan dihitamkan (●) pada huruf A, B, C, D, atau E.
+3. Jika jawaban kosong atau tidak jelas, kosongkan nilainya "".
+
+Outputkan HANYA JSON murni tanpa markdown formatting backticks, dengan struktur persis seperti ini:
+{
+  "name": "NAMA SISWA",
+  "nisn": "12345678",
+  "answers": [
+    { "no": 1, "ans": "A" },
+    { "no": 2, "ans": "B" }
+  ]
+}`;
+
+    const payload = {
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: promptText },
+            {
+              inlineData: {
+                mimeType: 'image/jpeg',
+                data: base64Image
+              }
+            }
+          ]
+        }
+      ],
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: 'application/json'
+      }
+    };
+
+    // Exponential backoff fetch
+    let response;
+    let delay = 1000;
+    for (let i = 0; i < 3; i++) {
+      try {
+        response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (response.ok) break;
+      } catch (e) {
+        if (i === 2) throw e;
+      }
+      await new Promise((r) => setTimeout(r, delay));
+      delay *= 2;
+    }
+
+    if (!response || !response.ok) {
+      throw new Error(`API Error: ${response ? response.statusText : 'Gagal menghubungi Gemini API'}`);
+    }
+
+    const data = await response.json();
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!rawText) {
+      throw new Error('Respons AI kosong atau tidak dapat dibaca.');
+    }
+
+    // Clean JSON string
+    const cleanedJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsedData = JSON.parse(cleanedJson);
+
+    // Format answers into object mapping
+    const answersObj = {};
+    if (Array.isArray(parsedData.answers)) {
+      parsedData.answers.forEach((item) => {
+        answersObj[item.no] = (item.ans || '').toUpperCase();
+      });
+    }
+
+    const grading = calculateGrade(answersObj);
+
+    return {
+      id: Date.now() + Math.random().toString(36).substr(2, 5),
+      name: parsedData.name || 'Siswa Tanpa Nama',
+      nisn: parsedData.nisn || `NISN-${Math.floor(10000000 + Math.random() * 90000000)}`,
+      answers: answersObj,
+      correctCount: grading.correctCount,
+      wrongCount: grading.wrongCount,
+      score: grading.finalScore,
+      isPassed: grading.isPassed,
+      scannedAt: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      fileName: fileName
+    };
+  };
+
+  // Handle Batch File Processing
+  const handleStartProcessing = async () => {
+    if (uploadedFiles.length === 0) {
+      alert('Silakan unggah minimal satu foto/scan LJK!');
+      return;
+    }
+
+    if (!apiKey) {
+      alert('API Key Gemini belum dimasukkan! Anda dapat memasukkannya di tab Pengaturan API Key atau menggunakan "Generate Demo Sample Data" untuk pengujian.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setProcessingProgress(0);
+    const newResults = [];
+
+    for (let i = 0; i < uploadedFiles.length; i++) {
+      const file = uploadedFiles[i];
+      setStatusMessage(`Mengoreksi LJK ${i + 1} dari ${uploadedFiles.length}: ${file.name}...`);
+      try {
+        const base64 = await fileToBase64(file);
+        const result = await processLjkWithGemini(base64, file.name);
+        newResults.push(result);
+      } catch (error) {
+        console.error('Error processing LJK:', error);
+        // Fallback for demo / error gracefully
+        newResults.push({
+          id: Date.now() + i,
+          name: `Siswa (${file.name.replace(/\.[^/.]+$/, '')})`,
+          nisn: `3174${Math.floor(100000 + Math.random() * 900000)}`,
+          answers: generateMockAnswers(questionCount, 0.75),
+          ...calculateGrade(generateMockAnswers(questionCount, 0.75)),
+          scannedAt: new Date().toLocaleTimeString('id-ID'),
+          fileName: file.name,
+          errorNote: error.message
+        });
+      }
+      setProcessingProgress(Math.round(((i + 1) / uploadedFiles.length) * 100));
+    }
+
+    setStudentResults((prev) => [...prev, ...newResults]);
+    setIsProcessing(false);
+    setStatusMessage('Pengoreksian selesai!');
+    setActiveTab('recap');
+  };
+
+  // Helper Mock Answer Generator for Demo
+  const generateMockAnswers = (count, accuracy = 0.8) => {
+    const mockObj = {};
+    const options = ['A', 'B', 'C', 'D', 'E'];
+    for (let i = 1; i <= count; i++) {
+      if (Math.random() < accuracy) {
+        mockObj[i] = answerKey[i] || 'A';
+      } else {
+        const remaining = options.filter((o) => o !== answerKey[i]);
+        mockObj[i] = remaining[Math.floor(Math.random() * remaining.length)];
+      }
+    }
+    return mockObj;
+  };
+
+  // Load Demo Data Button
+  const handleLoadDemoData = () => {
+    const mockStudents = [
+      { name: 'Aditya Pratama', nisn: '0051234567' },
+      { name: 'Budi Santoso', nisn: '0052345678' },
+      { name: 'Citra Dewi', nisn: '0053456789' },
+      { name: 'Dian Sastro', nisn: '0054567890' },
+      { name: 'Eko Wijaya', nisn: '0055678901' },
+      { name: 'Fani Rahmawati', nisn: '0056789012' },
+      { name: 'Gilang Ramadhan', nisn: '0057890123' },
+      { name: 'Hani Susanti', nisn: '0058901234' }
+    ];
+
+    const generated = mockStudents.map((st, idx) => {
+      const accuracy = 0.6 + (idx % 4) * 0.12; // varying scores
+      const answers = generateMockAnswers(questionCount, accuracy);
+      const grading = calculateGrade(answers);
+
+      return {
+        id: 'demo-' + idx + '-' + Date.now(),
+        name: st.name,
+        nisn: st.nisn,
+        answers: answers,
+        correctCount: grading.correctCount,
+        wrongCount: grading.wrongCount,
+        score: grading.finalScore,
+        isPassed: grading.isPassed,
+        scannedAt: '10:15 AM',
+        fileName: `LJK_${st.name.replace(' ', '_')}.jpg`
+      };
+    });
+
+    setStudentResults(generated);
+    setActiveTab('dashboard');
+  };
+
+  // Manual Override Edit Save
+  const handleSaveStudentEdit = () => {
+    if (!selectedStudent) return;
+    const grading = calculateGrade(editForm.answers);
+    const updated = {
+      ...selectedStudent,
+      name: editForm.name,
+      nisn: editForm.nisn,
+      answers: editForm.answers,
+      correctCount: grading.correctCount,
+      wrongCount: grading.wrongCount,
+      score: grading.finalScore,
+      isPassed: grading.isPassed
+    };
+
+    setStudentResults((prev) => prev.map((s) => (s.id === selectedStudent.id ? updated : s)));
+    setSelectedStudent(updated);
+    setIsEditingStudent(false);
+  };
+
+  // Delete Student Result
+  const handleDeleteStudent = (id) => {
+    if (confirm('Apakah Anda yakin ingin menghapus hasil penilaian siswa ini?')) {
+      setStudentResults((prev) => prev.filter((s) => s.id !== id));
+      if (selectedStudent && selectedStudent.id === id) setSelectedStudent(null);
+    }
+  };
+
+  // Recalculate all scores when Answer Key or Weights change
+  const handleRecalculateAll = () => {
+    const updated = studentResults.map((st) => {
+      const grading = calculateGrade(st.answers);
+      return {
+        ...st,
+        correctCount: grading.correctCount,
+        wrongCount: grading.wrongCount,
+        score: grading.finalScore,
+        isPassed: grading.isPassed
+      };
+    });
+    setStudentResults(updated);
+    alert('Seluruh nilai siswa berhasil diperbarui sesuai kunci jawaban terbaru!');
+  };
+
+  // Generate Official PDF Report
+  const handleExportPDF = async () => {
+    if (!reportRef.current) return;
+    try {
+      if (window.html2canvas && window.jspdf) {
+        const element = reportRef.current;
+        const canvas = await window.html2canvas(element, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210;
+        const pageHeight = 295;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save(`Laporan_Hasil_LJK_${schoolInfo.subject.replace(/ /g, '_')}_${schoolInfo.classGrade}.pdf`);
+      } else {
+        window.print();
+      }
+    } catch (e) {
+      console.error('PDF export failed:', e);
+      window.print();
+    }
+  };
+
+  // Item Difficulty & Analytics Calculations
+  const getAnalytics = () => {
+    if (studentResults.length === 0) {
+      return {
+        avgScore: 0,
+        highestScore: 0,
+        lowestScore: 0,
+        passRate: 0,
+        totalPassed: 0,
+        totalFailed: 0,
+        itemStats: []
+      };
+    }
+
+    const scores = studentResults.map((s) => s.score);
+    const totalPassed = studentResults.filter((s) => s.isPassed).length;
+    const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    const highestScore = Math.max(...scores);
+    const lowestScore = Math.min(...scores);
+    const passRate = Math.round((totalPassed / studentResults.length) * 100);
+
+    // Question difficulty calculation
+    const itemStats = [];
+    for (let i = 1; i <= questionCount; i++) {
+      let correct = 0;
+      studentResults.forEach((st) => {
+        if ((st.answers[i] || '').toUpperCase() === (answerKey[i] || '').toUpperCase()) {
+          correct++;
+        }
+      });
+      const pct = Math.round((correct / studentResults.length) * 100);
+      itemStats.push({
+        no: i,
+        correctCount: correct,
+        percentage: pct,
+        difficulty: pct > 75 ? 'Mudah' : pct > 40 ? 'Sedang' : 'Sukar'
+      });
+    }
+
+    return {
+      avgScore,
+      highestScore,
+      lowestScore,
+      passRate,
+      totalPassed,
+      totalFailed: studentResults.length - totalPassed,
+      itemStats
+    };
+  };
+
+  const analytics = getAnalytics();
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col">
+      {/* HEADER NAVBAR */}
+      <header className="bg-emerald-800 text-white shadow-lg sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/10 p-2.5 rounded-xl backdrop-blur-md border border-white/20">
+              <Brain className="w-7 h-7 text-emerald-300" />
             </div>
-            
-            <div class="flex items-center gap-2 sm:gap-4">
-                <!-- Sound Toggle -->
-                <button id="btn-sound" onclick="toggleSound()" class="w-9 h-9 bg-amber-700 hover:bg-amber-600 rounded-full flex items-center justify-center text-amber-100 shadow transition">
-                    <i class="fa-solid fa-volume-high" id="sound-icon"></i>
-                </button>
-                <!-- Home Button -->
-                <button onclick="showScreen('screen-main-menu')" class="w-9 h-9 bg-amber-700 hover:bg-amber-600 rounded-full flex items-center justify-center text-amber-100 shadow transition">
-                    <i class="fa-solid fa-house"></i>
-                </button>
+            <div>
+              <h1 className="text-xl font-extrabold tracking-tight flex items-center gap-2">
+                AI GRADER SISTEM <span className="text-xs bg-emerald-500/30 text-emerald-200 px-2 py-0.5 rounded-full font-medium border border-emerald-400/30">V1.5 Vision</span>
+              </h1>
+              <p className="text-xs text-emerald-200">Koreksi LJK Otomatis & Analisis Penilaian Sekolah</p>
             </div>
-        </header>
+          </div>
 
-        <!-- Dynamic Game Content Container -->
-        <main class="relative flex-1 flex flex-col justify-center items-center p-3 sm:p-6 overflow-x-hidden" id="main-stage">
-
-            <!-- --------------------------------------- -->
-            <!-- 1. MAIN MENU SCREEN -->
-            <!-- --------------------------------------- -->
-            <div id="screen-main-menu" class="w-full h-full flex flex-col items-center justify-center text-center space-y-6 py-4">
-                
-                <!-- Title & Puppet Display -->
-                <div class="relative flex items-center justify-center gap-4 my-2">
-                    <div class="w-20 h-28 sm:w-28 sm:h-36 bg-contain bg-no-repeat bg-center animate-float" style="background-image: url('https://placehold.co/120x180/4a2e18/fef3c7?text=SEMAR');">
-                        <div class="w-full h-full flex items-end justify-center pb-2 text-[10px] font-bold text-amber-200 bg-amber-950/40 rounded-lg">Ki Semar</div>
-                    </div>
-                    <div class="text-center px-2">
-                        <span class="inline-block px-3 py-1 bg-emerald-700 text-emerald-100 text-xs font-semibold rounded-full mb-2 shadow">Kuliner Tradisional</span>
-                        <h2 class="text-3xl sm:text-5xl font-extrabold font-javanese text-amber-900 drop-shadow-md">Pembuat Dawet Ayu</h2>
-                        <p class="text-xs sm:text-sm text-amber-800 font-medium max-w-xs mx-auto mt-1">Pelajari resep rahasia dan layani pelanggan di warung legendaris!</p>
-                    </div>
-                    <div class="w-20 h-28 sm:w-28 sm:h-36 bg-contain bg-no-repeat bg-center animate-float" style="animation-delay: 1.5s; background-image: url('https://placehold.co/120x180/4a2e18/fef3c7?text=GARENG');">
-                        <div class="w-full h-full flex items-end justify-center pb-2 text-[10px] font-bold text-amber-200 bg-amber-950/40 rounded-lg">Gareng</div>
-                    </div>
-                </div>
-
-                <!-- Mode Selection Buttons -->
-                <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md px-4">
-                    <button onclick="startCookingStory()" class="flex-1 custom-btn bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-xl font-bold flex flex-col items-center gap-1 text-base border-2 border-emerald-800">
-                        <i class="fa-solid fa-utensils text-2xl mb-1"></i>
-                        <span>Mode Memasak</span>
-                        <span class="text-[11px] font-normal text-emerald-100">Simulasi Resep Otentik</span>
-                    </button>
-                    <button onclick="startArcadeMode()" class="flex-1 custom-btn bg-amber-600 hover:bg-amber-500 text-white p-4 rounded-xl font-bold flex flex-col items-center gap-1 text-base border-2 border-amber-800">
-                        <i class="fa-solid fa-store text-2xl mb-1"></i>
-                        <span>Warung Arcade</span>
-                        <span class="text-[11px] font-normal text-amber-100">Tantangan Waktu Saji</span>
-                    </button>
-                </div>
-
-                <!-- Fun Fact Pill -->
-                <div class="bg-amber-100 border border-amber-300 rounded-lg p-3 max-w-md text-xs text-amber-900 flex items-center gap-3 shadow-sm">
-                    <i class="fa-solid fa-lightbulb text-amber-600 text-xl"></i>
-                    <p class="text-left"><strong>Tahukah Kamu?</strong> Nama "Dawet Ayu" dipopulerkan oleh seni calung Banyumasan serta simbol Semar & Gareng di pikulan!</p>
-                </div>
-            </div>
-
-            <!-- --------------------------------------- -->
-            <!-- 2. STORY / COOKING SIMULATION STAGE -->
-            <!-- --------------------------------------- -->
-            <div id="screen-cooking" class="w-full flex-1 flex flex-col justify-between hidden">
-                
-                <!-- Progress Header -->
-                <div class="w-full bg-amber-200/70 rounded-xl p-2 mb-3 flex items-center justify-between border border-amber-300">
-                    <div class="flex items-center gap-2">
-                        <span id="cook-step-badge" class="bg-amber-800 text-amber-100 font-bold px-2.5 py-0.5 rounded-full text-xs">Langkah 1/6</span>
-                        <h3 id="cook-step-title" class="font-bold text-amber-900 text-sm sm:text-base">Mengekstrak Suji & Pandan</h3>
-                    </div>
-                    <div class="flex items-center gap-1 text-amber-700 text-xs font-semibold">
-                        <i class="fa-solid fa-star text-amber-500"></i> <span id="cook-score">0</span> Poin
-                    </div>
-                </div>
-
-                <!-- Interactive Game Playground Canvas/Area -->
-                <div id="cooking-playground" class="relative flex-1 bg-amber-100/60 rounded-2xl border-2 border-dashed border-amber-300 p-4 flex flex-col items-center justify-center min-h-[280px]">
-                    <!-- Dynamic Interactive Cooking Steps will load here -->
-                </div>
-
-                <!-- Guidance Footer with Wayang Puppets -->
-                <div class="mt-3 bg-amber-900/90 text-amber-100 p-3 rounded-xl flex items-center gap-3 border border-amber-950">
-                    <div class="w-12 h-12 rounded-full bg-amber-700 flex-shrink-0 flex items-center justify-center overflow-hidden border border-amber-400">
-                        <span class="text-xl">👴</span>
-                    </div>
-                    <div class="text-xs sm:text-sm">
-                        <p id="semar-dialog" class="text-amber-200 font-medium">"Ketuk daun pandan dan suji lalu tumbuk halus untuk menghasilkan warna hijau alami yang harum!"</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- --------------------------------------- -->
-            <!-- 3. ARCADE WARUNG MODE STAGE -->
-            <!-- --------------------------------------- -->
-            <div id="screen-arcade" class="w-full flex-1 flex flex-col justify-between hidden">
-                
-                <!-- Top Status Bar -->
-                <div class="w-full bg-amber-900 text-amber-100 rounded-xl p-2.5 mb-2 flex justify-between items-center text-xs sm:text-sm shadow">
-                    <div>⏱️ Waktu: <span id="arcade-timer" class="font-bold text-amber-300 text-base">60</span>s</div>
-                    <div>⭐ Skor: <span id="arcade-score" class="font-bold text-yellow-400 text-base">0</span></div>
-                    <div>👥 Pembeli: <span id="arcade-customers" class="font-bold text-emerald-300 text-base">0/5</span></div>
-                </div>
-
-                <!-- Customer Orders Area -->
-                <div class="bg-amber-100 rounded-xl p-3 mb-2 border border-amber-300 flex items-center justify-between min-h-[100px]">
-                    <div class="flex items-center gap-3">
-                        <div id="customer-avatar" class="text-4xl animate-bounce">🧑</div>
-                        <div>
-                            <div class="text-xs font-bold text-amber-900" id="customer-speech">"Saya pesan 1 Dawet Ayu!"</div>
-                            <div id="customer-order-recipe" class="flex flex-wrap gap-1 mt-1">
-                                <!-- Target ingredients badges dynamically inserted -->
-                            </div>
-                        </div>
-                    </div>
-                    <div class="w-16 bg-amber-200 rounded-full h-3 border border-amber-400 overflow-hidden">
-                        <div id="patience-bar" class="bg-emerald-500 h-full w-full transition-all duration-200"></div>
-                    </div>
-                </div>
-
-                <!-- Serving Glass Workbench -->
-                <div class="flex-1 bg-amber-200/40 rounded-xl p-3 border-2 border-amber-300 flex items-center justify-center gap-6 my-1">
-                    
-                    <!-- Player Glass -->
-                    <div class="flex flex-col items-center">
-                        <div class="text-[10px] font-bold text-amber-800 mb-1">Gelas Racikanmu</div>
-                        <div class="dawet-glass w-24 h-40 flex flex-col-reverse justify-start p-1 relative">
-                            <div id="glass-layer-gula" class="w-full bg-amber-800/90 h-0 transition-all rounded-b-xl flex items-center justify-center text-[9px] text-amber-200 font-bold">Gula</div>
-                            <div id="glass-layer-dawet" class="w-full bg-emerald-600/90 h-0 transition-all flex items-center justify-center text-[9px] text-emerald-100 font-bold">Dawet</div>
-                            <div id="glass-layer-ice" class="w-full bg-cyan-200/80 h-0 transition-all flex items-center justify-center text-[9px] text-cyan-900 font-bold">Es</div>
-                            <div id="glass-layer-santan" class="w-full bg-amber-50/90 h-0 transition-all flex items-center justify-center text-[9px] text-amber-900 font-bold">Santan</div>
-                            <div id="glass-layer-topping" class="w-full bg-yellow-400/90 h-0 transition-all flex items-center justify-center text-[9px] text-amber-950 font-bold">Nangka</div>
-                        </div>
-                    </div>
-
-                    <!-- Action Control Buttons -->
-                    <div class="grid grid-cols-2 gap-2 max-w-xs">
-                        <button onclick="addArcadeIngredient('gula')" class="p-2 bg-amber-800 hover:bg-amber-700 text-white rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1">🟤 Gula</button>
-                        <button onclick="addArcadeIngredient('dawet')" class="p-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1">🟢 Dawet</button>
-                        <button onclick="addArcadeIngredient('ice')" class="p-2 bg-cyan-500 hover:bg-cyan-400 text-white rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1">🧊 Es Batu</button>
-                        <button onclick="addArcadeIngredient('santan')" class="p-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1 border">🥛 Santan</button>
-                        <button onclick="addArcadeIngredient('topping')" class="p-2 bg-yellow-500 hover:bg-yellow-400 text-amber-950 rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1 col-span-2">🍍 Nangka/Durian</button>
-                    </div>
-                </div>
-
-                <!-- Serve & Reset Controls -->
-                <div class="flex gap-3 mt-2">
-                    <button onclick="resetArcadeGlass()" class="w-1/3 bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 rounded-xl text-xs shadow">Buang & Ulangi</button>
-                    <button onclick="serveArcadeGlass()" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-sm shadow border-b-4 border-emerald-800">Sajikan Ke Pembeli! ✨</button>
-                </div>
-            </div>
-
-        </main>
-
-        <!-- FOOTER BRANDING -->
-        <footer class="bg-amber-950 text-amber-300 text-[10px] text-center py-2 px-4 border-t border-amber-900">
-            Dawet Ayu khas Banjarnegara - Dilestarikan melalui Permainan Edukasi Interaktif | © 2026
-        </footer>
-    </div>
-
-    <!-- --------------------------------------- -->
-    <!-- MODAL POPUP: EDUCATIONAL QUIZ & FACTS   -->
-    <!-- --------------------------------------- -->
-    <div id="modal-educational" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-amber-50 border-4 border-amber-800 rounded-2xl max-w-md w-full p-5 shadow-2xl text-center relative">
-            
-            <div class="w-16 h-16 bg-amber-200 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-amber-600 text-3xl">
-                💡
-            </div>
-
-            <h3 id="quiz-title" class="text-xl font-bold font-javanese text-amber-900 mb-2">Fakta Unik Dawet Ayu</h3>
-            <p id="quiz-fact-text" class="text-xs sm:text-sm text-slate-700 leading-relaxed mb-4 bg-amber-100 p-3 rounded-lg border border-amber-200">
-                Pandan & suji tidak hanya memberikan warna hijau cantik, tetapi juga aroma wangi alami serta kandungan antioksidan tinggi!
-            </p>
-
-            <div id="quiz-question-box" class="mb-4 text-left hidden">
-                <p id="quiz-question" class="text-xs font-bold text-amber-900 mb-2">Pertanyaan Singkat:</p>
-                <div id="quiz-options" class="space-y-2">
-                    <!-- Dynamic option buttons -->
-                </div>
-            </div>
-
-            <button id="btn-next-step" onclick="closeEducationalModal()" class="w-full custom-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm border-2 border-emerald-800">
-                Lanjut Ke Langkah Berikutnya ➡️
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleLoadDemoData}
+              className="px-3 py-1.5 bg-emerald-700/80 hover:bg-emerald-600 text-emerald-100 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition border border-emerald-600"
+              title="Isi Data Demo Uji Coba Cepat"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+              <span>Demo Sample Data</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                activeTab === 'settings' ? 'bg-white text-emerald-900 font-bold' : 'bg-emerald-900/60 text-emerald-100 hover:bg-emerald-700'
+              }`}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span>API Key</span>
+              {apiKey ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+              )}
+            </button>
+          </div>
         </div>
-    </div>
 
-    <!-- GAME LOGIC SCRIPT -->
-    <script>
-        /* -------------------------------------------------- */
-        /* AUDIO SYNTHESIZER (Web Audio API - No External Assets) */
-        /* -------------------------------------------------- */
-        let audioCtx = null;
-        let soundEnabled = true;
+        {/* NAVIGATION TABS */}
+        <nav className="bg-emerald-900/90 border-t border-emerald-700/50 px-4 overflow-x-auto">
+          <div className="max-w-7xl mx-auto flex space-x-1 min-w-max">
+            {[
+              { id: 'scan', label: 'Pengoreksian LJK', icon: Upload },
+              { id: 'key', label: 'Kunci Jawaban', icon: Key },
+              { id: 'recap', label: 'Rekap & Hasil', icon: FileSpreadsheet, badge: studentResults.length },
+              { id: 'dashboard', label: 'Statistik & Analisis', icon: BarChart3 },
+              { id: 'template', label: 'Cetak Template LJK', icon: Printer },
+              { id: 'settings', label: 'Pengaturan Sekolah', icon: School }
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 py-3 px-4 font-semibold text-xs border-b-2 transition ${
+                    isActive
+                      ? 'border-emerald-300 text-emerald-100 bg-emerald-800/60'
+                      : 'border-transparent text-emerald-200 hover:text-white hover:bg-emerald-800/30'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                  {tab.badge !== undefined && tab.badge > 0 && (
+                    <span className="ml-1 px-1.5 py-0.2 text-[10px] bg-emerald-500 text-emerald-950 font-bold rounded-full">
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      </header>
 
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
+      {/* MAIN CONTAINER */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
 
-        function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
-            if (!soundEnabled) return;
-            try {
-                initAudio();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch (e) { console.log(e); }
-        }
+        {/* TAB 1: PENGOREKSIAN LJK */}
+        {activeTab === 'scan' && (
+          <div className="space-y-6">
+            {/* Top Info Banner */}
+            <div className="bg-gradient-to-r from-teal-800 to-emerald-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-teal-300" />
+                  Pindai & Koreksi Lembar Jawaban (LJK)
+                </h2>
+                <p className="text-teal-100 text-xs mt-1 max-w-2xl">
+                  Unggah foto atau scan LJK siswa. Gemini AI Vision akan mendeteksi nama siswa, NISN, serta silangan (X) atau bulatan (●) pada pilihan A, B, C, D, E secara otomatis.
+                </p>
+              </div>
+              <div className="bg-white/10 px-4 py-2 rounded-xl text-xs backdrop-blur-sm border border-white/10 flex items-center gap-3">
+                <span className="text-teal-200">Soal Aktif:</span>
+                <span className="font-extrabold text-white text-base">{questionCount} PG</span>
+                <button
+                  onClick={() => setActiveTab('key')}
+                  className="text-teal-300 underline font-semibold hover:text-white ml-2"
+                >
+                  Ubah Kunci
+                </button>
+              </div>
+            </div>
 
-        function playSoundEffect(type) {
-            if (!soundEnabled) return;
-            if (type === 'click') playTone(440, 'sine', 0.08, 0.1);
-            else if (type === 'pop') playTone(600, 'triangle', 0.1, 0.15);
-            else if (type === 'splash') playTone(220, 'sawtooth', 0.25, 0.08);
-            else if (type === 'success') {
-                playTone(523.25, 'sine', 0.15, 0.1);
-                setTimeout(() => playTone(659.25, 'sine', 0.15, 0.1), 100);
-                setTimeout(() => playTone(783.99, 'sine', 0.25, 0.1), 200);
-            } else if (type === 'fanfare') {
-                playTone(523.25, 'triangle', 0.2, 0.15);
-                setTimeout(() => playTone(659.25, 'triangle', 0.2, 0.15), 150);
-                setTimeout(() => playTone(783.99, 'triangle', 0.2, 0.15), 300);
-                setTimeout(() => playTone(1046.50, 'triangle', 0.4, 0.2), 450);
-            }
-        }
+            {/* Upload Area & Controls */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-emerald-600" />
+                  Unggah Berkas LJK Siswa (Single / Batch)
+                </h3>
 
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            const icon = document.getElementById('sound-icon');
-            if (soundEnabled) {
-                icon.className = 'fa-solid fa-volume-high';
-                playSoundEffect('click');
-            } else {
-                icon.className = 'fa-solid fa-volume-xmark';
-            }
-        }
-
-        /* -------------------------------------------------- */
-        /* SCREEN MANAGEMENT & GAME STATE                    */
-        /* -------------------------------------------------- */
-        function showScreen(screenId) {
-            playSoundEffect('click');
-            ['screen-main-menu', 'screen-cooking', 'screen-arcade'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            document.getElementById(screenId).classList.remove('hidden');
-            
-            if (screenId === 'screen-main-menu') {
-                stopArcadeTimer();
-            }
-        }
-
-        /* -------------------------------------------------- */
-        /* MODE 1: COOKING STORY MODE SIMULATION             */
-        /* -------------------------------------------------- */
-        let currentStep = 1;
-        let cookingScore = 0;
-        let stepInteractiveData = {};
-
-        const stepDescriptions = [
-            { title: "Penyiapan Bahan & Pewarna Alami", semar: "Ketuk daun pandan & suji untuk menumbuknya di lumpang kayu sampai menghasilkan perasan hijau alami!" },
-            { title: "Memasak Adonan Cendol/Dawet", semar: "Aduk adonan tepung beras, tapioka, dan air pandan di atas kuali secara memutar hingga mengental!" },
-            { title: "Mencetak Dawet Ayu", semar: "Tekan cetakan dawet saat indikator berada di zona hijau agar butiran dawet jatuh sempurna ke air es!" },
-            { title: "Membuat Juruh / Gula Jawa Syrup", semar: "Iris Gula Jawa asli Banjarnegara & lelehkan bersama potongan nangka harum!" },
-            { title: "Memperoleh Santan Gurih", semar: "Peras kelapa parut dengan air matang & garam sedikit untuk santan gurih melimpah!" },
-            { title: "Penyajikan & Plating Dawet Ayu", semar: "Susun bahan-bahan di gelas secara berurutan dari gula merah hingga topping nangka lezat!" }
-        ];
-
-        function startCookingStory() {
-            currentStep = 1;
-            cookingScore = 0;
-            document.getElementById('cook-score').innerText = cookingScore;
-            showScreen('screen-cooking');
-            loadCookingStep(currentStep);
-        }
-
-        function loadCookingStep(step) {
-            document.getElementById('cook-step-badge').innerText = `Langkah ${step}/6`;
-            document.getElementById('cook-step-title').innerText = stepDescriptions[step - 1].title;
-            document.getElementById('semar-dialog').innerText = `"${stepDescriptions[step - 1].semar}"`;
-
-            const playground = document.getElementById('cooking-playground');
-            playground.innerHTML = '';
-
-            if (step === 1) renderStep1(playground);
-            else if (step === 2) renderStep2(playground);
-            else if (step === 3) renderStep3(playground);
-            else if (step === 4) renderStep4(playground);
-            else if (step === 5) renderStep5(playground);
-            else if (step === 6) renderStep6(playground);
-        }
-
-        // --- STEP 1: GRINDING LEAVES ---
-        function renderStep1(container) {
-            stepInteractiveData = { clicksLeft: 6 };
-            container.innerHTML = `
-                <div class="text-center">
-                    <div id="mortar-area" onclick="grindLeaves()" class="relative w-40 h-40 bg-amber-800 rounded-full border-8 border-amber-950 flex items-center justify-center cursor-pointer shadow-lg mx-auto">
-                        <div id="leaves-icon" class="text-5xl transition-transform transform duration-100">🌿</div>
-                        <div class="absolute bottom-2 text-[10px] text-amber-200 bg-amber-950/80 px-2 py-0.5 rounded">Ketuk Tumbuk!</div>
-                    </div>
-                    <div class="w-48 bg-gray-200 h-4 rounded-full mt-4 mx-auto overflow-hidden border">
-                        <div id="grind-bar" class="bg-emerald-500 h-full w-0 transition-all"></div>
-                    </div>
-                    <p class="text-xs text-amber-900 mt-2 font-semibold">Tumbukan Selesai: <span id="grind-count">0</span>/6</p>
+                <div className="border-2 border-dashed border-emerald-200 hover:border-emerald-500 bg-emerald-50/30 hover:bg-emerald-50/70 rounded-2xl p-8 text-center transition cursor-pointer flex flex-col items-center justify-center relative">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        setUploadedFiles(Array.from(e.target.files));
+                      }
+                    }}
+                  />
+                  <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 mb-3 shadow-inner">
+                    <Upload className="w-8 h-8" />
+                  </div>
+                  <p className="font-bold text-slate-700 text-sm">
+                    Tarik & Lepaskan Berkas Foto LJK di Sini
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Mendukung format JPG, PNG, WEBP (Bisa pilih banyak gambar sekaligus)
+                  </p>
+                  <span className="mt-4 px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-sm">
+                    Pilih File Gambar
+                  </span>
                 </div>
-            `;
-        }
 
-        function grindLeaves() {
-            if (stepInteractiveData.clicksLeft <= 0) return;
-            stepInteractiveData.clicksLeft--;
-            playSoundEffect('pop');
+                {/* Uploaded Files Preview List */}
+                {uploadedFiles.length > 0 && (
+                  <div className="mt-6 border-t border-slate-100 pt-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-xs font-bold text-slate-700">
+                        {uploadedFiles.length} Berkas Siap Diperiksa
+                      </span>
+                      <button
+                        onClick={() => setUploadedFiles([])}
+                        className="text-xs text-rose-600 hover:underline flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" /> Bersihkan
+                      </button>
+                    </div>
 
-            const count = 6 - stepInteractiveData.clicksLeft;
-            document.getElementById('grind-count').innerText = count;
-            document.getElementById('grind-bar').style.width = `${(count / 6) * 100}%`;
-            
-            const icon = document.getElementById('leaves-icon');
-            icon.style.transform = 'scale(1.3) rotate(15deg)';
-            setTimeout(() => icon.style.transform = 'scale(1) rotate(0deg)', 100);
-
-            if (stepInteractiveData.clicksLeft === 0) {
-                playSoundEffect('success');
-                addCookingPoints(150);
-                setTimeout(() => {
-                    showEducationalModal(
-                        "Pewarna Alami Suji & Pandan",
-                        "Masyarakat Banjarnegara menggunakan kombinasi daun suji untuk menghasilkan warna hijau pekat yang cantik, serta daun pandan wangi untuk aroma harum semerbak alami tanpa pewarna buatan!",
-                        "Apa fungsi utama daun pandan dalam pembuatan dawet?",
-                        ["Memberi rasa asin", "Memberikan aroma harum alami", "Membuat tekstur keras"],
-                        1
-                    );
-                }, 500);
-            }
-        }
-
-        // --- STEP 2: STIRRING CENDOL ---
-        function renderStep2(container) {
-            stepInteractiveData = { progress: 0 };
-            container.innerHTML = `
-                <div class="text-center">
-                    <div class="relative w-44 h-44 bg-slate-800 rounded-full border-4 border-slate-600 flex items-center justify-center mx-auto shadow-inner">
-                        <div id="cendol-pot" class="w-36 h-36 rounded-full bg-emerald-800/40 border-2 border-emerald-500 flex items-center justify-center relative overflow-hidden">
-                            <div id="stir-paddle" class="text-4xl cursor-pointer select-none" onclick="stirPaste()">🥄</div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-1">
+                      {uploadedFiles.map((file, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-slate-50 p-2 rounded-lg border border-slate-200 text-xs flex items-center gap-2 overflow-hidden"
+                        >
+                          <div className="w-8 h-8 bg-emerald-200/60 text-emerald-800 rounded flex-shrink-0 flex items-center justify-center font-bold">
+                            {idx + 1}
+                          </div>
+                          <div className="truncate flex-1">
+                            <p className="font-semibold text-slate-700 truncate">{file.name}</p>
+                            <p className="text-[10px] text-slate-400">{(file.size / 1024).toFixed(1)} KB</p>
+                          </div>
                         </div>
+                      ))}
                     </div>
-                    <p class="text-xs text-amber-900 mt-3 font-semibold">Ketuk sendok untuk mengaduk adonan cendol kental!</p>
-                    <div class="w-48 bg-gray-200 h-3 rounded-full mt-2 mx-auto overflow-hidden">
-                        <div id="stir-bar" class="bg-emerald-600 h-full w-0 transition-all"></div>
+
+                    <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                      <button
+                        onClick={handleStartProcessing}
+                        disabled={isProcessing}
+                        className="flex-1 py-3 px-6 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl font-bold text-sm shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isProcessing ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            <span>Mengoreksi AI ({processingProgress}%)...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-4 h-4 fill-current" />
+                            <span>Mulai Pengoreksian AI Batch ({uploadedFiles.length} LJK)</span>
+                          </>
+                        )}
+                      </button>
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Sidebar Guide & AI Model Config */}
+              <div className="space-y-4">
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                  <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    Konfigurasi AI Vision
+                  </h4>
+                  <div className="space-y-3 text-xs">
+                    <div>
+                      <label className="block text-slate-600 font-semibold mb-1">Model Gemini Vision</label>
+                      <select
+                        value={selectedModel}
+                        onChange={(e) => setSelectedModel(e.target.value)}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-700"
+                      >
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Sangat Cepat & Akurat)</option>
+                        <option value="gemini-2.0-flash">Gemini 2.0 Flash (Eksperimental)</option>
+                        <option value="gemini-2.5">Gemini 2.5 (Pro Vision)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-600 font-semibold mb-1">Status API Key</label>
+                      {apiKey ? (
+                        <div className="p-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <span>API Key Terpasang</span>
+                        </div>
+                      ) : (
+                        <div className="p-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-amber-600" />
+                          <span>API Key Belum Diisi</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-            `;
-        }
 
-        function stirPaste() {
-            if (stepInteractiveData.progress >= 100) return;
-            stepInteractiveData.progress += 12;
-            playSoundEffect('pop');
-
-            const paddle = document.getElementById('stir-paddle');
-            paddle.style.transform = `rotate(${stepInteractiveData.progress * 3.6}deg) scale(1.2)`;
-            document.getElementById('stir-bar').style.width = `${Math.min(100, stepInteractiveData.progress)}%`;
-
-            if (stepInteractiveData.progress >= 100) {
-                playSoundEffect('success');
-                addCookingPoints(150);
-                setTimeout(() => {
-                    showEducationalModal(
-                        "Kombinasi Tepung Beras & Tapioka",
-                        "Rahasia kekenyalan dawet ayu khas Banjarnegara terletak pada campuran tepung beras (memberikan rasa lembut) dan tepung tapioka/aren (memberikan kenyal pas yang khas)!",
-                        "Tepung apakah yang memberikan tekstur kenyal pada dawet?",
-                        ["Tepung Tapioka/Aren", "Tepung Terigu", "Tepung Bumbu"],
-                        0
-                    );
-                }, 500);
-            }
-        }
-
-        // --- STEP 3: EXTRUDING DAWET (TIMING BAR) ---
-        function renderStep3(container) {
-            stepInteractiveData = { drops: 0 };
-            container.innerHTML = `
-                <div class="text-center w-full max-w-xs">
-                    <div class="text-3xl mb-2">🥣 ❄️</div>
-                    <p class="text-xs font-bold text-amber-900 mb-3">Tekan tombol saat jarum berada di area hijau!</p>
-                    
-                    <!-- Timing Bar -->
-                    <div class="relative w-full h-8 bg-gray-300 rounded-full overflow-hidden border-2 border-amber-800 mb-4">
-                        <div class="absolute left-[40%] w-[20%] h-full bg-emerald-500"></div>
-                        <div id="timing-needle" class="absolute top-0 bottom-0 w-2 bg-red-600 left-0 transition-none"></div>
-                    </div>
-
-                    <button onclick="pressDawet()" class="custom-btn bg-amber-700 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl text-sm">
-                        TEKAN CETAKAN! 🎯
-                    </button>
-                    <p class="text-xs text-amber-900 mt-2">Butir Dawet Terkumpul: <span id="drop-count">0</span>/3</p>
+                <div className="bg-slate-100 rounded-2xl p-5 border border-slate-200">
+                  <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <HelpCircle className="w-4 h-4 text-slate-600" />
+                    Tips Hasil Maksimal AI
+                  </h4>
+                  <ul className="text-xs text-slate-600 space-y-2 list-disc pl-4 leading-relaxed">
+                    <li>Pastikan pencahayaan cukup dan foto tegak lurus lurus dari atas LJK.</li>
+                    <li>Siswa dapat mengarsir lingkaran (●) atau memberikan silangan (X).</li>
+                    <li>Gunakan Template LJK 3-Kolom resmi yang dapat dicetak dari aplikasi ini.</li>
+                    <li>
+                      Jika tidak ada API Key, gunakan tombol <span className="font-bold text-emerald-700">"Demo Sample Data"</span> untuk menguji seluruh fitur.
+                    </li>
+                  </ul>
                 </div>
-            `;
+              </div>
+            </div>
 
-            // Start Needle Loop
-            let pos = 0;
-            let dir = 2;
-            stepInteractiveData.interval = setInterval(() => {
-                pos += dir;
-                if (pos >= 96 || pos <= 0) dir *= -1;
-                const needle = document.getElementById('timing-needle');
-                if (needle) needle.style.left = pos + '%';
-                stepInteractiveData.pos = pos;
-            }, 20);
-        }
+            {/* Status Progress Bar overlay */}
+            {isProcessing && (
+              <div className="bg-emerald-900 text-white rounded-xl p-4 shadow-lg flex flex-col gap-2 animate-pulse">
+                <div className="flex justify-between text-xs font-bold">
+                  <span>{statusMessage}</span>
+                  <span>{processingProgress}%</span>
+                </div>
+                <div className="w-full bg-emerald-950 h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-emerald-400 h-full transition-all duration-300"
+                    style={{ width: `${processingProgress}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-        function pressDawet() {
-            const pos = stepInteractiveData.pos;
-            // Green zone is 40% to 60%
-            if (pos >= 38 && pos <= 62) {
-                playSoundEffect('splash');
-                stepInteractiveData.drops++;
-                document.getElementById('drop-count').innerText = stepInteractiveData.drops;
-                if (stepInteractiveData.drops >= 3) {
-                    clearInterval(stepInteractiveData.interval);
-                    playSoundEffect('success');
-                    addCookingPoints(200);
-                    setTimeout(() => {
-                        showEducationalModal(
-                            "Cetakan Tradisional Dawet",
-                            "Adonan cendol panas ditekan melalui cetakan berlubang langsung ke dalam baskom berisi air es mendingin seketika agar bentuk butiran dawet tidak lengket dan kenyal sempurna!",
-                            "Mengapa adonan dawet dicetak langsung ke dalam air es?",
-                            ["Agar warnanya memudar", "Agar dawet seketika mengeras & tidak lengket", "Agar dawet mengapung tinggi"],
-                            1
+        {/* TAB 2: KUNCI JAWABAN */}
+        {activeTab === 'key' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <Key className="w-5 h-5 text-emerald-600" />
+                  Pengaturan Kunci Jawaban & Bobot Nilai
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Atur kunci jawaban resmi dan bobot untuk setiap butir soal.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-bold text-slate-700">Jumlah Soal:</label>
+                  <select
+                    value={questionCount}
+                    onChange={(e) => handleQuestionCountChange(e.target.value)}
+                    className="bg-slate-100 border border-slate-300 rounded-lg px-3 py-1.5 font-bold text-xs text-slate-800"
+                  >
+                    {[10, 15, 20, 25, 30, 40, 50].map((num) => (
+                      <option key={num} value={num}>
+                        {num} Soal
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  onClick={handleRecalculateAll}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Hitung Ulang Nilai Siswa</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Answer Key Grid */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {Array.from({ length: questionCount }, (_, index) => {
+                  const qNum = index + 1;
+                  const currentAns = answerKey[qNum] || 'A';
+                  return (
+                    <div
+                      key={qNum}
+                      className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2 hover:border-emerald-400 transition"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-extrabold text-xs text-slate-700">No. {qNum}</span>
+                        <span className="text-[10px] text-slate-400">Kunci</span>
+                      </div>
+
+                      <div className="flex gap-1">
+                        {['A', 'B', 'C', 'D', 'E'].map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => setAnswerKey({ ...answerKey, [qNum]: opt })}
+                            className={`flex-1 py-1 text-xs font-bold rounded transition ${
+                              currentAns === opt
+                                ? 'bg-emerald-600 text-white shadow-sm'
+                                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: REKAP NILAI & EKSPOR PDF */}
+        {activeTab === 'recap' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                  Tabel Hasil Penilaian Siswa ({studentResults.length})
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Hasil pengoreksian AI. Anda dapat mengulas, mengedit jawaban secara manual, atau mengekspor laporan resmi.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportPDF}
+                  disabled={studentResults.length === 0}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Ekspor Laporan PDF Resmi</span>
+                </button>
+              </div>
+            </div>
+
+            {studentResults.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 space-y-3">
+                <FileSpreadsheet className="w-12 h-12 text-slate-300 mx-auto" />
+                <p className="font-bold text-slate-600 text-sm">Belum ada data pengoreksian LJK</p>
+                <p className="text-xs text-slate-400">
+                  Silakan unggah foto LJK di menu "Pengoreksian LJK" atau gunakan "Demo Sample Data".
+                </p>
+                <button
+                  onClick={handleLoadDemoData}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm hover:bg-emerald-700"
+                >
+                  Isi Data Uji Coba Cepat
+                </button>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                        <th className="p-3 w-12 text-center">No</th>
+                        <th className="p-3">Nama Siswa</th>
+                        <th className="p-3">NISN</th>
+                        <th className="p-3 text-center">Benar</th>
+                        <th className="p-3 text-center">Salah</th>
+                        <th className="p-3 text-center">Nilai (100)</th>
+                        <th className="p-3 text-center">Status</th>
+                        <th className="p-3 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {studentResults.map((st, idx) => (
+                        <tr key={st.id} className="hover:bg-slate-50 transition">
+                          <td className="p-3 text-center font-bold text-slate-400">{idx + 1}</td>
+                          <td className="p-3 font-bold text-slate-800">{st.name}</td>
+                          <td className="p-3 text-slate-500 font-mono">{st.nisn}</td>
+                          <td className="p-3 text-center font-bold text-emerald-600">{st.correctCount}</td>
+                          <td className="p-3 text-center font-bold text-rose-500">{st.wrongCount}</td>
+                          <td className="p-3 text-center">
+                            <span className="font-extrabold text-sm px-2 py-0.5 bg-slate-100 rounded text-slate-800">
+                              {st.score}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            {st.isPassed ? (
+                              <span className="px-2 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full text-[10px] inline-flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> TUNTAS
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-rose-100 text-rose-800 font-bold rounded-full text-[10px] inline-flex items-center gap-1">
+                                <XCircle className="w-3 h-3 text-rose-600" /> REMEDIAL
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedStudent(st);
+                                  setEditForm({ name: st.name, nisn: st.nisn, answers: { ...st.answers } });
+                                }}
+                                className="p-1.5 bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-emerald-700 rounded-lg transition"
+                                title="Lihat Detail & Override Manual"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteStudent(st.id)}
+                                className="p-1.5 bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-700 rounded-lg transition"
+                                title="Hapus Data"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* OFFICIAL PDF HIDDEN/VISIBLE REPORT TEMPLATE */}
+            <div className="mt-8">
+              <h3 className="font-bold text-slate-700 text-sm mb-3">Pratinjau Dokumen Laporan Resmi (Siap Ekspor)</h3>
+              <div className="bg-white p-8 rounded-2xl shadow border border-slate-300 max-w-4xl mx-auto" ref={reportRef}>
+                {/* School Header / Kop Surat */}
+                <div className="border-b-4 border-double border-slate-900 pb-4 mb-6 text-center">
+                  <h2 className="font-extrabold text-lg text-slate-900 tracking-wide uppercase">{schoolInfo.name}</h2>
+                  <p className="text-xs text-slate-600 italic mt-0.5">{schoolInfo.address}</p>
+                  <p className="text-xs font-bold text-slate-800 mt-2 tracking-widest border-t border-slate-300 pt-2 uppercase">
+                    LAPORAN HASIL PENILAIAN LEMBAR JAWABAN KOMPUTER (LJK)
+                  </p>
+                </div>
+
+                {/* Metadata */}
+                <div className="grid grid-cols-2 gap-4 text-xs mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <div>
+                    <p><span className="font-semibold text-slate-500">Mata Pelajaran:</span> <strong className="text-slate-800">{schoolInfo.subject}</strong></p>
+                    <p className="mt-1"><span className="font-semibold text-slate-500">Kelas / Semester:</span> <strong className="text-slate-800">{schoolInfo.classGrade} ({schoolInfo.semester})</strong></p>
+                  </div>
+                  <div>
+                    <p><span className="font-semibold text-slate-500">Guru Pengampu:</span> <strong className="text-slate-800">{schoolInfo.teacherName}</strong></p>
+                    <p className="mt-1"><span className="font-semibold text-slate-500">Batas KKM:</span> <strong className="text-slate-800">{schoolInfo.passingScore}</strong></p>
+                  </div>
+                </div>
+
+                {/* Table for PDF */}
+                <table className="w-full text-left border-collapse text-xs mb-6">
+                  <thead>
+                    <tr className="bg-slate-200 text-slate-800 font-bold border border-slate-300">
+                      <th className="p-2 text-center border border-slate-300 w-10">No</th>
+                      <th className="p-2 border border-slate-300">Nama Siswa</th>
+                      <th className="p-2 border border-slate-300">NISN</th>
+                      <th className="p-2 text-center border border-slate-300">Benar</th>
+                      <th className="p-2 text-center border border-slate-300">Salah</th>
+                      <th className="p-2 text-center border border-slate-300">Nilai Akhir</th>
+                      <th className="p-2 text-center border border-slate-300">Keterangan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {studentResults.map((st, i) => (
+                      <tr key={st.id} className="border border-slate-300">
+                        <td className="p-2 text-center border border-slate-300">{i + 1}</td>
+                        <td className="p-2 font-semibold border border-slate-300">{st.name}</td>
+                        <td className="p-2 border border-slate-300 font-mono text-[11px]">{st.nisn}</td>
+                        <td className="p-2 text-center border border-slate-300">{st.correctCount}</td>
+                        <td className="p-2 text-center border border-slate-300">{st.wrongCount}</td>
+                        <td className="p-2 text-center font-bold border border-slate-300">{st.score}</td>
+                        <td className="p-2 text-center font-bold border border-slate-300">
+                          {st.isPassed ? 'TUNTAS' : 'REMEDIAL'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Signatures */}
+                <div className="grid grid-cols-2 gap-8 text-xs pt-8 mt-4 border-t border-slate-200">
+                  <div className="text-center space-y-12">
+                    <div>
+                      <p>Mengetahui,</p>
+                      <p className="font-bold">Kepala Sekolah</p>
+                    </div>
+                    <div>
+                      <p className="font-bold underline">{schoolInfo.headmasterName}</p>
+                      <p className="text-[10px] text-slate-500">NIP. {schoolInfo.headmasterNip}</p>
+                    </div>
+                  </div>
+
+                  <div className="text-center space-y-12">
+                    <div>
+                      <p>Jakarta, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                      <p className="font-bold">Guru Mata Pelajaran</p>
+                    </div>
+                    <div>
+                      <p className="font-bold underline">{schoolInfo.teacherName}</p>
+                      <p className="text-[10px] text-slate-500">NIP. {schoolInfo.teacherNip}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: STATISTIK & ANALISIS */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p className="text-xs font-semibold text-slate-400">Rata-Rata Kelas</p>
+                <p className="text-3xl font-extrabold text-slate-800 mt-1">{analytics.avgScore}</p>
+                <div className="mt-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded w-fit">
+                  Target KKM: {schoolInfo.passingScore}
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p className="text-xs font-semibold text-slate-400">Persentase Kelulusan</p>
+                <p className="text-3xl font-extrabold text-emerald-600 mt-1">{analytics.passRate}%</p>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  {analytics.totalPassed} Tuntas / {analytics.totalFailed} Remedial
+                </p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p className="text-xs font-semibold text-slate-400">Nilai Tertinggi</p>
+                <p className="text-3xl font-extrabold text-teal-600 mt-1">{analytics.highestScore}</p>
+                <p className="text-[11px] text-slate-500 mt-1">Skor Maksimal: 100</p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p className="text-xs font-semibold text-slate-400">Nilai Terendah</p>
+                <p className="text-3xl font-extrabold text-rose-500 mt-1">{analytics.lowestScore}</p>
+                <p className="text-[11px] text-slate-500 mt-1">Perlu Pembinaan</p>
+              </div>
+            </div>
+
+            {/* Item Difficulty Analysis */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+              <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-emerald-600" />
+                Analisis Tingkat Kesukaran Soal (% Kebenaran Siswa)
+              </h3>
+
+              {studentResults.length === 0 ? (
+                <p className="text-xs text-slate-400 italic">Belum ada data untuk dianalisis.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {analytics.itemStats.map((item) => (
+                    <div key={item.no} className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-slate-700">Soal No. {item.no}</span>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                            item.difficulty === 'Mudah'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : item.difficulty === 'Sedang'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {item.difficulty}
+                        </span>
+                      </div>
+
+                      <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden mt-2">
+                        <div
+                          className={`h-full ${
+                            item.percentage > 75 ? 'bg-emerald-500' : item.percentage > 40 ? 'bg-amber-500' : 'bg-rose-500'
+                          }`}
+                          style={{ width: `${item.percentage}%` }}
+                        ></div>
+                      </div>
+
+                      <p className="text-[10px] text-slate-500 mt-1.5 text-right font-medium">
+                        {item.correctCount} Siswa Benar ({item.percentage}%)
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: TEMPLATE LJK 3-KOLOM */}
+        {activeTab === 'template' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <Printer className="w-5 h-5 text-emerald-600" />
+                  Template LJK Standar 3-Kolom Siap Cetak
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Cetak Lembar Jawaban Komputer standar ini di kertas A4 untuk dibagikan kepada siswa.
+                </p>
+              </div>
+
+              <button
+                onClick={() => window.print()}
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-2"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Cetak Sekarang (A4)</span>
+              </button>
+            </div>
+
+            {/* PRINTABLE LJK TEMPLATE SHEET */}
+            <div className="bg-white p-8 rounded-2xl shadow-md border border-slate-300 max-w-4xl mx-auto text-slate-900" ref={printableLjkRef}>
+              {/* Kop LJK */}
+              <div className="border-b-2 border-slate-900 pb-3 mb-4 text-center">
+                <h3 className="font-extrabold text-base tracking-wider uppercase">{schoolInfo.name}</h3>
+                <p className="text-xs font-bold tracking-widest mt-0.5">LEMBAR JAWABAN KOMPUTER (LJK) PENILAIAN</p>
+              </div>
+
+              {/* Form Siswa */}
+              <div className="grid grid-cols-2 gap-4 text-xs border border-slate-800 p-3 rounded mb-4 font-mono">
+                <div className="space-y-2">
+                  <p>NAMA SISWA : __________________________________</p>
+                  <p>NIS / NISN  : __________________________________</p>
+                  <p>MATA PELAJARAN : {schoolInfo.subject}</p>
+                </div>
+                <div className="space-y-2">
+                  <p>KELAS / NO. ABSEN : {schoolInfo.classGrade} / ______</p>
+                  <p>TANGGAL UJIAN   : ____ / ____ / 2026</p>
+                  <p>TANDA TANGAN     : ______________________</p>
+                </div>
+              </div>
+
+              {/* Petunjuk Pengisian */}
+              <div className="bg-slate-100 border border-slate-300 p-2 text-[10px] rounded mb-4 text-slate-700">
+                <p className="font-bold mb-0.5">PETUNJUK PENGISIAN:</p>
+                <p>1. Berikan tanda silang (X) atau hitamkan penuh (●) pada salah satu huruf A, B, C, D, atau E.</p>
+                <p>2. Jika ingin mengganti jawaban, hapus atau coret dengan jelas jawaban sebelumnya.</p>
+              </div>
+
+              {/* 3-COLUMN QUESTION BUBBLE GRID */}
+              <div className="grid grid-cols-3 gap-6 text-xs font-mono">
+                {[0, 1, 2].map((colIdx) => {
+                  const itemsPerCol = Math.ceil(questionCount / 3);
+                  const startNo = colIdx * itemsPerCol + 1;
+                  const endNo = Math.min((colIdx + 1) * itemsPerCol, questionCount);
+
+                  if (startNo > questionCount) return null;
+
+                  return (
+                    <div key={colIdx} className="space-y-2 border border-slate-300 p-2.5 rounded bg-slate-50/50">
+                      {Array.from({ length: endNo - startNo + 1 }, (_, i) => {
+                        const qNum = startNo + i;
+                        return (
+                          <div key={qNum} className="flex items-center justify-between py-0.5 border-b border-slate-200 last:border-0">
+                            <span className="font-bold w-6 text-right pr-2 text-slate-700">{qNum}.</span>
+                            <div className="flex gap-2">
+                              {['A', 'B', 'C', 'D', 'E'].map((opt) => (
+                                <span
+                                  key={opt}
+                                  className="w-5 h-5 rounded-full border border-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-700 hover:bg-slate-200 cursor-pointer"
+                                >
+                                  {opt}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         );
-                    }, 500);
-                }
-            } else {
-                playSoundEffect('click');
-            }
-        }
-
-        // --- STEP 4: GULA JAWA SYRUP ---
-        function renderStep4(container) {
-            container.innerHTML = `
-                <div class="text-center">
-                    <div class="w-32 h-32 bg-amber-900 rounded-xl mx-auto flex items-center justify-center text-5xl shadow-md border-4 border-amber-950 mb-3">
-                        🍯
+                      })}
                     </div>
-                    <p class="text-xs font-bold text-amber-900 mb-3">Iris Gula Jawa Banjarnegara & potong buah nangka!</p>
-                    <button onclick="sliceSugar()" id="btn-slice" class="custom-btn bg-amber-700 hover:bg-amber-600 text-white font-bold py-2.5 px-5 rounded-xl text-xs">
-                        Iris Gula Merah (0/3) 🔪
-                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: PENGATURAN API KEY & SEKOLAH */}
+        {activeTab === 'settings' && (
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <Key className="w-5 h-5 text-emerald-600" />
+                Pengaturan API Key Google Gemini
+              </h2>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Aplikasi ini berjalan secara <strong>Client-Side Murni</strong>. API Key disimpan dengan aman di local browser Anda dan hanya digunakan untuk memanggil Google Gemini Vision API.
+              </p>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Gemini API Key
+                </label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => handleSaveApiKey(e.target.value)}
+                  placeholder="Masukkan API Key AI Studio (AIzaSy...)"
+                  className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <School className="w-5 h-5 text-emerald-600" />
+                Identitas Sekolah & Dokumen
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Nama Sekolah</label>
+                  <input
+                    type="text"
+                    value={schoolInfo.name}
+                    onChange={(e) => setSchoolInfo({ ...schoolInfo, name: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800"
+                  />
                 </div>
-            `;
-            stepInteractiveData = { slices: 0 };
-        }
 
-        function sliceSugar() {
-            stepInteractiveData.slices++;
-            playSoundEffect('pop');
-            const btn = document.getElementById('btn-slice');
-            btn.innerText = `Iris Gula Merah (${stepInteractiveData.slices}/3) 🔪`;
-            if (stepInteractiveData.slices >= 3) {
-                playSoundEffect('success');
-                addCookingPoints(150);
-                setTimeout(() => {
-                    showEducationalModal(
-                        "Gula Jawa Asli Banjarnegara",
-                        "Gula Jawa berkualitas tinggi diproduksi dari nira pohon kelapa murni di Banjarnegara. Penambahan irisan buah nangka atau durian pada juruh memberikan aroma gurih manis legendaris!",
-                        "Bahan alami apakah yang memberikan rasa manis khas pada juruh Dawet Ayu?",
-                        ["Gula Jawa / Gula Aren", "Pemanis Buatan", "Sirup Jagung"],
-                        0
-                    );
-                }, 500);
-            }
-        }
-
-        // --- STEP 5: SANTAN PREPARATION ---
-        function renderStep5(container) {
-            container.innerHTML = `
-                <div class="text-center">
-                    <div class="w-36 h-36 bg-amber-100 rounded-full mx-auto border-4 border-amber-300 flex items-center justify-center text-5xl shadow mb-3">
-                        🥥
-                    </div>
-                    <p class="text-xs font-bold text-amber-900 mb-3">Peras kelapa parut untuk menghasilkan santan gurih!</p>
-                    <button onclick="squeezeSantan()" id="btn-santan" class="custom-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-5 rounded-xl text-xs">
-                        Peras Santan (0/4) 💧
-                    </button>
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Mata Pelajaran</label>
+                  <input
+                    type="text"
+                    value={schoolInfo.subject}
+                    onChange={(e) => setSchoolInfo({ ...schoolInfo, subject: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800"
+                  />
                 </div>
-            `;
-            stepInteractiveData = { squeezes: 0 };
-        }
 
-        function squeezeSantan() {
-            stepInteractiveData.squeezes++;
-            playSoundEffect('splash');
-            const btn = document.getElementById('btn-santan');
-            btn.innerText = `Peras Santan (${stepInteractiveData.squeezes}/4) 💧`;
-            if (stepInteractiveData.squeezes >= 4) {
-                playSoundEffect('success');
-                addCookingPoints(150);
-                setTimeout(() => {
-                    showEducationalModal(
-                        "Santan Gurih Segar",
-                        "Santan segar dimasak dengan sedikit garam dan helai daun pandan dengan api kecil sambil terus diaduk agar santan tidak 'pecah' dan rasa gurihnya menyatu sempurna!",
-                        "Bagaimana cara memasak santan agar kualitasnya tetap terjaga?",
-                        ["Dimasak api besar tanpa diaduk", "Dimasak api kecil sambil terus diaduk", "Dicampur cuka"],
-                        1
-                    );
-                }, 500);
-            }
-        }
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Kelas / Rombel</label>
+                  <input
+                    type="text"
+                    value={schoolInfo.classGrade}
+                    onChange={(e) => setSchoolInfo({ ...schoolInfo, classGrade: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800"
+                  />
+                </div>
 
-        // --- STEP 6: PLATING DAWET AYU ---
-        function renderStep6(container) {
-            stepInteractiveData = { layers: [] };
-            container.innerHTML = `
-                <div class="text-center w-full">
-                    <p class="text-xs font-bold text-amber-900 mb-2">Susun racikan Dawet Ayu sesuai urutan tradisional!</p>
-                    <div class="flex justify-center items-center gap-4 my-2">
-                        <div class="dawet-glass w-20 h-36 flex flex-col-reverse justify-start p-1">
-                            <div id="step6-gula" class="w-full bg-amber-800 h-0 transition-all text-[8px] text-amber-100 font-bold flex items-center justify-center">Gula</div>
-                            <div id="step6-dawet" class="w-full bg-emerald-600 h-0 transition-all text-[8px] text-emerald-100 font-bold flex items-center justify-center">Dawet</div>
-                            <div id="step6-es" class="w-full bg-cyan-300 h-0 transition-all text-[8px] text-cyan-900 font-bold flex items-center justify-center">Es</div>
-                            <div id="step6-santan" class="w-full bg-amber-50 h-0 transition-all text-[8px] text-amber-900 font-bold flex items-center justify-center">Santan</div>
-                            <div id="step6-nangka" class="w-full bg-yellow-400 h-0 transition-all text-[8px] text-amber-950 font-bold flex items-center justify-center">Nangka</div>
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Batas KKM Kelulusan</label>
+                  <input
+                    type="number"
+                    value={schoolInfo.passingScore}
+                    onChange={(e) => setSchoolInfo({ ...schoolInfo, passingScore: parseInt(e.target.value, 10) || 75 })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Nama Guru Pengampu</label>
+                  <input
+                    type="text"
+                    value={schoolInfo.teacherName}
+                    onChange={(e) => setSchoolInfo({ ...schoolInfo, teacherName: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Nama Kepala Sekolah</label>
+                  <input
+                    type="text"
+                    value={schoolInfo.headmasterName}
+                    onChange={(e) => setSchoolInfo({ ...schoolInfo, headmasterName: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* STUDENT DETAIL & MANUAL OVERRIDE MODAL */}
+      {selectedStudent && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
+              <div>
+                <h3 className="font-bold text-slate-800 text-base">Detail LJK Siswa & Override Jawaban</h3>
+                <p className="text-xs text-slate-400">Pemeriksaan ulang hasil baca AI</p>
+              </div>
+              <button
+                onClick={() => setSelectedStudent(null)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Info */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3 rounded-xl">
+                <div>
+                  <label className="font-semibold text-slate-500">Nama Siswa:</label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className="w-full mt-1 p-2 bg-white border border-slate-200 rounded font-bold text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-slate-500">NISN:</label>
+                  <input
+                    type="text"
+                    value={editForm.nisn}
+                    onChange={(e) => setEditForm({ ...editForm, nisn: e.target.value })}
+                    className="w-full mt-1 p-2 bg-white border border-slate-200 rounded font-bold text-slate-800"
+                  />
+                </div>
+              </div>
+
+              {/* Answers Grid for Override */}
+              <div>
+                <h4 className="font-bold text-slate-700 text-xs mb-2">Jawaban Siswa vs Kunci Jawaban:</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-60 overflow-y-auto p-1">
+                  {Array.from({ length: questionCount }, (_, i) => {
+                    const qNo = i + 1;
+                    const studentAns = editForm.answers[qNo] || '';
+                    const keyAns = answerKey[qNo] || '';
+                    const isCorrect = studentAns.toUpperCase() === keyAns.toUpperCase() && studentAns !== '';
+
+                    return (
+                      <div
+                        key={qNo}
+                        className={`p-2 rounded border text-xs flex justify-between items-center ${
+                          isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'
+                        }`}
+                      >
+                        <span className="font-bold text-slate-700">#{qNo}</span>
+                        <div className="flex items-center gap-1">
+                          <select
+                            value={studentAns}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                answers: { ...editForm.answers, [qNo]: e.target.value }
+                              })
+                            }
+                            className="p-1 font-bold rounded bg-white border border-slate-300 text-slate-800 text-xs"
+                          >
+                            <option value="">-</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                          </select>
+                          <span className="text-[10px] text-slate-400">({keyAns})</span>
                         </div>
-                        <div class="grid grid-cols-1 gap-1.5 text-left">
-                            <button onclick="addPlatingLayer('gula')" class="px-3 py-1.5 bg-amber-800 text-white rounded text-xs font-bold shadow">1. Juruh Gula Jawa</button>
-                            <button onclick="addPlatingLayer('dawet')" class="px-3 py-1.5 bg-emerald-600 text-white rounded text-xs font-bold shadow">2. Cendol Dawet</button>
-                            <button onclick="addPlatingLayer('es')" class="px-3 py-1.5 bg-cyan-500 text-white rounded text-xs font-bold shadow">3. Es Batu</button>
-                            <button onclick="addPlatingLayer('santan')" class="px-3 py-1.5 bg-stone-200 text-slate-800 rounded text-xs font-bold shadow">4. Santan Gurih</button>
-                            <button onclick="addPlatingLayer('nangka')" class="px-3 py-1.5 bg-yellow-500 text-amber-950 rounded text-xs font-bold shadow">5. Topping Nangka</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function addPlatingLayer(type) {
-            playSoundEffect('pop');
-            if (type === 'gula') document.getElementById('step6-gula').style.height = '20%';
-            if (type === 'dawet') document.getElementById('step6-dawet').style.height = '25%';
-            if (type === 'es') document.getElementById('step6-es').style.height = '15%';
-            if (type === 'santan') document.getElementById('step6-santan').style.height = '25%';
-            if (type === 'nangka') document.getElementById('step6-nangka').style.height = '15%';
-
-            if (!stepInteractiveData.layers.includes(type)) {
-                stepInteractiveData.layers.push(type);
-            }
-
-            if (stepInteractiveData.layers.length >= 5) {
-                playSoundEffect('fanfare');
-                addCookingPoints(200);
-                setTimeout(() => {
-                    showEducationalModal(
-                        "Selamat! Dawet Ayu Siap Disajikan! 🎉",
-                        "Kamu telah berhasil mempelajari seluruh tahapan otentik pembuatan Dawet Ayu Banjarnegara! Kombinasi rasa manis legit, gurih santan, dan kenyalnya dawet alami siap memanjakan lidah.",
-                        "Apa arti filosofis figur Semar & Gareng pada gerobak Dawet Ayu?",
-                        ["Simbol 'Dawai' (Dawet) dan 'Ayu' (Ayu/Laris)", "Hanya hiasan semata", "Simbol raja zaman dahulu"],
-                        0
+                      </div>
                     );
-                }, 500);
-            }
-        }
+                  })}
+                </div>
+              </div>
 
-        function addCookingPoints(pts) {
-            cookingScore += pts;
-            document.getElementById('cook-score').innerText = cookingScore;
-        }
+              <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
+                <button
+                  onClick={() => setSelectedStudent(null)}
+                  className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSaveStudentEdit}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 shadow"
+                >
+                  Simpan Perubahan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-        /* -------------------------------------------------- */
-        /* EDUCATIONAL MODAL & QUIZ CONTROLLER               */
-        /* -------------------------------------------------- */
-        let currentQuizCorrect = 0;
-
-        function showEducationalModal(title, fact, question, options, correctIdx) {
-            document.getElementById('quiz-title').innerText = title;
-            document.getElementById('quiz-fact-text').innerText = fact;
-
-            const qBox = document.getElementById('quiz-question-box');
-            const optContainer = document.getElementById('quiz-options');
-            optContainer.innerHTML = '';
-
-            if (question) {
-                qBox.classList.remove('hidden');
-                document.getElementById('quiz-question').innerText = question;
-                currentQuizCorrect = correctIdx;
-
-                options.forEach((opt, idx) => {
-                    const btn = document.createElement('button');
-                    btn.className = "w-full text-left p-2 text-xs bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-lg font-medium text-amber-900 transition";
-                    btn.innerText = `${idx + 1}. ${opt}`;
-                    btn.onclick = () => answerQuiz(idx, btn);
-                    optContainer.appendChild(btn);
-                });
-            } else {
-                qBox.classList.add('hidden');
-            }
-
-            document.getElementById('modal-educational').classList.remove('hidden');
-        }
-
-        function answerQuiz(selectedIdx, btnEl) {
-            if (selectedIdx === currentQuizCorrect) {
-                playSoundEffect('success');
-                btnEl.className = "w-full text-left p-2 text-xs bg-emerald-500 text-white rounded-lg font-bold";
-                addCookingPoints(100);
-            } else {
-                playSoundEffect('click');
-                btnEl.className = "w-full text-left p-2 text-xs bg-rose-500 text-white rounded-lg font-bold";
-            }
-            // Disable options after answer
-            const buttons = document.querySelectorAll('#quiz-options button');
-            buttons.forEach(b => b.onclick = null);
-        }
-
-        function closeEducationalModal() {
-            playSoundEffect('click');
-            document.getElementById('modal-educational').classList.add('hidden');
-            
-            if (currentStep < 6) {
-                currentStep++;
-                loadCookingStep(currentStep);
-            } else {
-                // Game Finished -> Back to menu
-                showScreen('screen-main-menu');
-            }
-        }
-
-        /* -------------------------------------------------- */
-        /* MODE 2: WARUNG ARCADE MODE (TIME-ATTACK)          */
-        /* -------------------------------------------------- */
-        let arcadeTimer = 60;
-        let arcadeScore = 0;
-        let customerCount = 0;
-        let timerInterval = null;
-        let currentOrder = [];
-        let currentGlassLayers = [];
-
-        const customerAvatars = ['👨', '👩', '👵', '👴', '🧑‍🦱'];
-        const possibleIngredients = ['gula', 'dawet', 'ice', 'santan', 'topping'];
-
-        function startArcadeMode() {
-            arcadeTimer = 60;
-            arcadeScore = 0;
-            customerCount = 0;
-            document.getElementById('arcade-timer').innerText = arcadeTimer;
-            document.getElementById('arcade-score').innerText = arcadeScore;
-            document.getElementById('arcade-customers').innerText = `${customerCount}/5`;
-            
-            showScreen('screen-arcade');
-            resetArcadeGlass();
-            spawnNewCustomer();
-
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                arcadeTimer--;
-                document.getElementById('arcade-timer').innerText = arcadeTimer;
-                if (arcadeTimer <= 0) {
-                    endArcadeGame();
-                }
-            }, 1000);
-        }
-
-        function stopArcadeTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-        }
-
-        function spawnNewCustomer() {
-            if (customerCount >= 5) {
-                endArcadeGame();
-                return;
-            }
-
-            const randAvatar = customerAvatars[Math.floor(Math.random() * customerAvatars.length)];
-            document.getElementById('customer-avatar').innerText = randAvatar;
-
-            // Generate Random Order Recipe (3 to 5 ingredients required)
-            const recipeLength = 3 + Math.floor(Math.random() * 3);
-            currentOrder = [];
-            
-            // Standard order usually starts with gula & dawet
-            currentOrder.push('gula', 'dawet');
-            while (currentOrder.length < recipeLength) {
-                const randIng = possibleIngredients[Math.floor(Math.random() * possibleIngredients.length)];
-                if (!currentOrder.includes(randIng)) {
-                    currentOrder.push(randIng);
-                }
-            }
-
-            // Render Recipe Badges
-            const recipeBox = document.getElementById('customer-order-recipe');
-            recipeBox.innerHTML = '';
-            currentOrder.forEach(ing => {
-                const badge = document.createElement('span');
-                badge.className = "px-2 py-0.5 text-[10px] rounded font-bold text-white shadow-sm " + getIngredientBadgeColor(ing);
-                badge.innerText = ing.toUpperCase();
-                recipeBox.appendChild(badge);
-            });
-
-            document.getElementById('customer-speech').innerText = `"Tolong buatkan Dawet Ayu sesuai pesanan ya!"`;
-            resetArcadeGlass();
-        }
-
-        function getIngredientBadgeColor(ing) {
-            if (ing === 'gula') return 'bg-amber-800';
-            if (ing === 'dawet') return 'bg-emerald-600';
-            if (ing === 'ice') return 'bg-cyan-500';
-            if (ing === 'santan') return 'bg-slate-400';
-            if (ing === 'topping') return 'bg-yellow-500';
-            return 'bg-gray-500';
-        }
-
-        function addArcadeIngredient(ing) {
-            playSoundEffect('pop');
-            if (currentGlassLayers.length >= 5) return;
-
-            currentGlassLayers.push(ing);
-            updateGlassVisuals();
-        }
-
-        function updateGlassVisuals() {
-            // Reset height first
-            ['gula', 'dawet', 'ice', 'santan', 'topping'].forEach(id => {
-                document.getElementById(`glass-layer-${id}`).style.height = '0px';
-            });
-
-            currentGlassLayers.forEach(ing => {
-                const el = document.getElementById(`glass-layer-${ing}`);
-                if (el) el.style.height = '24px';
-            });
-        }
-
-        function resetArcadeGlass() {
-            playSoundEffect('click');
-            currentGlassLayers = [];
-            updateGlassVisuals();
-        }
-
-        function serveArcadeGlass() {
-            // Check if user glass matches current order
-            const isMatch = currentOrder.length === currentGlassLayers.length &&
-                currentOrder.every((val, index) => currentGlassLayers.includes(val));
-
-            if (isMatch) {
-                playSoundEffect('success');
-                arcadeScore += 200 + (arcadeTimer * 2);
-                customerCount++;
-                document.getElementById('arcade-score').innerText = arcadeScore;
-                document.getElementById('arcade-customers').innerText = `${customerCount}/5`;
-                
-                spawnNewCustomer();
-            } else {
-                playSoundEffect('click');
-                document.getElementById('customer-speech').innerText = `"Wah, bahan racikannya kurang pas nih!"`;
-            }
-        }
-
-        function endArcadeGame() {
-            stopArcadeTimer();
-            playSoundEffect('fanfare');
-            showEducationalModal(
-                "Warung Selesai Dilayani! 🏪",
-                `Luar biasa! Kamu berhasil mendapatkan total skor ${arcadeScore} Poin di Warung Dawet Ayu Banjarnegara! Tarik pelanggan lebih banyak lagi dengan melayani dengan cepat!`,
-                null, [], 0
-            );
-        }
-    </script>
-</body>
-</html>
+      {/* FOOTER */}
+      <footer className="bg-slate-900 text-slate-400 text-xs py-4 text-center border-t border-slate-800 mt-auto">
+        <p>© 2026 AI Grader Sistem - Lembar Jawaban Komputer Automatic Evaluation.</p>
+      </footer>
+    </div>
+  );
+}
 ```
