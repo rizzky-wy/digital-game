@@ -463,6 +463,15 @@
         function backToLevels() {
             goHome();
         }
+
+        // --- Audio Effects System (Web Audio API) ---
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
         }
 
         function playSound(type) {
@@ -805,121 +814,6 @@
         ];
 
         /* --------------------------------------------------
-           Game State Management
-        -------------------------------------------------- */
-        let state = {
-            playerName: "Siswa",
-            currentStage: 1,
-            unlockedStages: [1], // Level 1 is unlocked by default
-            stageScores: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-            userAnswers: {}, // key: questionId
-            currentQuestionIndexInStage: 0
-        };
-
-        // Load progress from localStorage if available
-        function loadSaveData() {
-            const saved = localStorage.getItem('fikih_game_progress_v1');
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    state = { ...state, ...parsed };
-                } catch(e) { console.error(e); }
-            }
-        }
-
-        function saveData() {
-            localStorage.setItem('fikih_game_progress_v1', JSON.stringify(state));
-        }
-
-        function resetProgress() {
-            if (confirm("Apakah kamu yakin ingin mengulang seluruh petualangan dari awal?")) {
-                localStorage.removeItem('fikih_game_progress_v1');
-                state.unlockedStages = [1];
-                state.stageScores = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-                state.userAnswers = {};
-                renderLevels();
-                openModal("Reset Berhasil", "Semua kemajuan game telah direset.", "fa-circle-check text-emerald-500");
-            }
-        }
-
-        /* --------------------------------------------------
-           Navigation & UI Renderers
-        -------------------------------------------------- */
-        function startGame() {
-            const input = document.getElementById('playerName').value.trim();
-            if (input !== "") {
-                state.playerName = input;
-            } else {
-                state.playerName = "Siswa Sholeh";
-            }
-            saveData();
-            document.getElementById('welcomeScreen').classList.add('hidden');
-            document.getElementById('levelScreen').classList.remove('hidden');
-            document.getElementById('displayPlayerName').innerText = state.playerName;
-            renderLevels();
-        }
-
-        function renderLevels() {
-            const container = document.getElementById('levelGrid');
-            container.innerHTML = '';
-
-            STAGES.forEach(stg => {
-                const isUnlocked = state.unlockedStages.includes(stg.id);
-                const score = state.stageScores[stg.id] || 0;
-                
-                const card = document.createElement('div');
-                card.className = `bg-white rounded-3xl p-6 shadow-md border-2 ${isUnlocked ? 'border-teal-200 hover:border-teal-400 card-bounce cursor-pointer' : 'border-slate-200 opacity-80'} relative overflow-hidden transition`;
-
-                let statusBadge = '';
-                if (!isUnlocked) {
-                    statusBadge = `<div class="bg-slate-200 text-slate-600 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1">
-                        <i class="fa-solid fa-lock animate-lock text-slate-500"></i>
-                        <span>TERKUNCI</span>
-                    </div>`;
-                } else if (score > 0) {
-                    statusBadge = `<div class="bg-emerald-100 text-emerald-800 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1">
-                        <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                        <span>SKOR: ${score}</span>
-                    </div>`;
-                } else {
-                    statusBadge = `<div class="bg-amber-100 text-amber-800 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1">
-                        <i class="fa-solid fa-play text-amber-600"></i>
-                        <span>SIAP MAIN</span>
-                    </div>`;
-                }
-
-                card.innerHTML = `
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-gradient-to-tr ${stg.color} text-white rounded-2xl flex items-center justify-center text-xl shadow-md">
-                            <i class="fa-solid ${stg.icon}"></i>
-                        </div>
-                        ${statusBadge}
-                    </div>
-                    <h3 class="font-header font-bold text-lg text-slate-800">${stg.name}</h3>
-                    <p class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">${stg.desc}</p>
-
-                    <button ${isUnlocked ? `onclick="selectStage(${stg.id})"` : 'disabled'} 
-                        class="w-full py-2.5 rounded-xl font-header font-bold text-sm transition flex items-center justify-center space-x-2 ${
-                            isUnlocked 
-                            ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md' 
-                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                        }">
-                        <span>${isUnlocked ? 'Mulai Tahap Ini' : 'Selesaikan Tahap Sebelum'}</span>
-                        <i class="fa-solid ${isUnlocked ? 'fa-arrow-right' : 'fa-lock'}"></i>
-                    </button>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function backToLevels() {
-            document.getElementById('gameplayScreen').classList.add('hidden');
-            document.getElementById('certificateScreen').classList.add('hidden');
-            document.getElementById('levelScreen').classList.remove('hidden');
-            renderLevels();
-        }
-
-        /* --------------------------------------------------
            Gameplay Core
         -------------------------------------------------- */
         let currentStageQuestions = [];
@@ -1234,27 +1128,6 @@
                     spread: 100,
                     origin: { y: 0.5 }
                 });
-            }
-        }
-
-        /* --------------------------------------------------
-           Custom Modal Alert System
-        -------------------------------------------------- */
-        let modalCallback = null;
-
-        function openModal(title, message, iconClass, callback = null) {
-            document.getElementById('modalTitle').innerHTML = title;
-            document.getElementById('modalMessage').innerHTML = message;
-            document.getElementById('modalIcon').className = `w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl bg-teal-50 ${iconClass}`;
-            document.getElementById('customModal').classList.remove('hidden');
-            modalCallback = callback;
-        }
-
-        function closeModal() {
-            document.getElementById('customModal').classList.add('hidden');
-            if (modalCallback) {
-                modalCallback();
-                modalCallback = null;
             }
         }
 
