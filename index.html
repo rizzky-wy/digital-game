@@ -1,1000 +1,1316 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Geometric Shapes - Grade 2 Elementary</title>
+    <title>Game Edukasi Fikih Kelas II SD - ASAS Gasal</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Fredoka & Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
+    <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        quicksand: ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            teal: '#0D9488',
+                            emerald: '#059669',
+                            amber: '#F59E0B',
+                            sky: '#0284C7',
+                            purple: '#7C3AED',
+                            rose: '#E11D48',
+                            softYellow: '#FEF3C7',
+                            softGreen: '#D1FAE5',
+                            softBlue: '#E0F2FE'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #E0F2FE 0%, #D1FAE5 50%, #FEF3C7 100%);
             min-height: 100vh;
         }
-        .font-fredoka {
-            font-family: 'Fredoka', cursive, sans-serif;
+        .font-header {
+            font-family: 'Fredoka', sans-serif;
         }
-        .bounce-slow {
-            animation: bounce 3s infinite;
+        .card-bounce {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(-5%); }
-            50% { transform: translateY(0); }
+        .card-bounce:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        .pulse-subtle {
-            animation: pulse-border 2s infinite;
-        }
-        @keyframes pulse-border {
-            0%, 100% { border-color: rgba(99, 102, 241, 0.4); }
-            50% { border-color: rgba(99, 102, 241, 1); }
-        }
-        ::-webkit-scrollbar {
+        .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
         }
-        ::-webkit-scrollbar-track {
+        .custom-scrollbar::-webkit-scrollbar-track {
             background: #f1f1f1;
+            border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 9999px;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #0D9488;
+            border-radius: 10px;
+        }
+        /* Lock Pulse */
+        @keyframes pulse-lock {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        .animate-lock {
+            animation: pulse-lock 2s infinite ease-in-out;
         }
     </style>
 </head>
-<body class="text-slate-700 flex flex-col min-h-screen">
+<body class="text-slate-800 flex flex-col min-h-screen">
 
-    <!-- GLOBAL HEADER -->
-    <header class="bg-white shadow-md sticky top-0 z-50 px-4 py-3 border-b-4 border-indigo-400">
-        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-            <div class="flex items-center gap-3">
-                <div class="bg-indigo-500 text-white p-2.5 rounded-2xl shadow-inner text-xl">
-                    <i class="fa-solid fa-shapes"></i>
+    <!-- Header App -->
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-teal-100 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+                <div class="w-12 h-12 bg-gradient-to-tr from-teal-500 to-emerald-400 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md">
+                    <i class="fa-solid fa-mosque"></i>
                 </div>
                 <div>
-                    <h1 class="font-fredoka text-xl font-bold text-indigo-600 tracking-wide">Fun 2D Shapes!</h1>
-                    <p class="text-xs text-slate-500 font-medium">Grade 2 Math • Created by: <span class="text-indigo-600 font-bold">Rizky Wijayanto</span></p>
+                    <h1 class="font-header font-bold text-lg md:text-xl text-teal-800 leading-tight">
+                        Game Edukasi Fikih II SD
+                    </h1>
+                    <p class="text-xs text-slate-500 font-medium">ASESMEN SUMATIF AKHIR SEMESTER (ASAS) GASAL</p>
                 </div>
             </div>
-            <!-- Navigation Tabs -->
-            <nav class="flex flex-wrap justify-center gap-1.5 sm:gap-2">
-                <button onclick="switchTab('home')" id="nav-home" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-indigo-600 text-white shadow-sm transition-all flex items-center gap-1.5">
-                    <i class="fa-solid fa-house"></i> Home
+            <!-- Author Tag & Sound Toggle & Home Button -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <button onclick="goHome()" id="headerHomeBtn" class="hidden p-2.5 rounded-xl bg-amber-100 text-amber-800 hover:bg-amber-200 transition font-header font-bold text-xs flex items-center space-x-1" title="Menu Utama">
+                    <i class="fa-solid fa-house text-base"></i>
+                    <span class="hidden md:inline">Menu Utama</span>
                 </button>
-                <button onclick="switchTab('stage1')" id="nav-stage1" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center gap-1.5">
-                    <i class="fa-solid fa-compass"></i> 1. Exploration
+                <button onclick="toggleAudio()" id="audioBtn" class="p-2.5 rounded-xl bg-teal-50 text-teal-700 hover:bg-teal-100 transition" title="Suara Efek">
+                    <i class="fa-solid fa-volume-high text-base" id="audioIcon"></i>
                 </button>
-                <button onclick="switchTab('stage2')" id="nav-stage2" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center gap-1.5">
-                    <i class="fa-solid fa-puzzle-piece"></i> 2. Collaboration
-                </button>
-                <button onclick="switchTab('stage3')" id="nav-stage3" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center gap-1.5">
-                    <i class="fa-solid fa-chalkboard-user"></i> 3. Presentation
-                </button>
-                <button onclick="switchTab('stage4')" id="nav-stage4" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center gap-1.5">
-                    <i class="fa-solid fa-trophy text-amber-500"></i> 4. Tournament
-                </button>
-                <button onclick="switchTab('stage5')" id="nav-stage5" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all flex items-center gap-1.5">
-                    <i class="fa-solid fa-heart text-rose-500"></i> 5. Reflection
-                </button>
-            </nav>
+                <div class="hidden sm:block text-right bg-gradient-to-r from-teal-50 to-emerald-50 px-3 py-1.5 rounded-xl border border-teal-100">
+                    <p class="text-[10px] text-teal-600 font-semibold uppercase tracking-wider">Penyusun / Author</p>
+                    <p class="text-xs font-bold text-slate-700">Raesha Anindira Naifa W.</p>
+                </div>
+            </div>
         </div>
     </header>
 
-    <!-- MAIN CONTENT CONTAINER -->
-    <main class="flex-grow max-w-6xl w-full mx-auto p-4 sm:p-6">
+    <!-- Main Container -->
+    <main class="flex-grow max-w-5xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center">
 
-        <!-- 0. HOME / LANDING PAGE -->
-        <section id="page-home" class="tab-content">
-            <div class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-6 sm:p-12 text-white shadow-xl relative overflow-hidden my-4">
-                <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl">
-                    <i class="fa-solid fa-shapes"></i>
-                </div>
-                <div class="max-w-2xl relative z-10">
-                    <span class="bg-white/25 text-white text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider mb-4 inline-block">Interactive Learning Module</span>
-                    <h2 class="font-fredoka text-3xl sm:text-5xl font-bold mb-4 leading-tight">Recognizing 2D Geometric Shapes Around Us</h2>
-                    <p class="text-indigo-100 text-sm sm:text-base mb-6 font-medium">Let's learn about sides, angles, and everyday objects with an exciting group tournament game!</p>
-                    <div class="flex flex-wrap gap-4">
-                        <button onclick="switchTab('stage1')" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-6 py-3 rounded-2xl shadow-lg transition-transform hover:scale-105 flex items-center gap-2">
-                            Start Learning <i class="fa-solid fa-arrow-right"></i>
-                        </button>
-                        <button onclick="switchTab('stage4')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-2xl shadow-lg transition-transform hover:scale-105 flex items-center gap-2">
-                            <i class="fa-solid fa-gamepad"></i> Go to Tournament Game
-                        </button>
+        <!-- Welcome & Player Name Input Screen -->
+        <section id="welcomeScreen" class="bg-white/95 rounded-3xl p-6 md:p-10 shadow-xl border border-white text-center max-w-2xl mx-auto my-auto card-bounce">
+            <div class="w-24 h-24 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-inner">
+                <i class="fa-solid fa-star-and-crescent"></i>
+            </div>
+            <h2 class="font-header font-bold text-2xl md:text-3xl text-teal-900 mb-2">Assalamu'alaikum, Anak Sholeh/Sholehah!</h2>
+            <p class="text-slate-600 text-sm md:text-base mb-6">
+                Selamat datang di Petualangan Belajar Fikih! Mari uji pemahamanmu mengenai <span class="font-bold text-teal-700">Adzan, Iqamah, dan Shalat Fardhu</span>.
+            </p>
+
+            <!-- Resume Banner if save data exists -->
+            <div id="resumeBanner" class="hidden bg-emerald-50 border-2 border-emerald-200 p-4 rounded-2xl mb-6 text-left">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-floppy-disk text-emerald-600 text-2xl"></i>
+                    <div>
+                        <p class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Progress Tersimpan Ditemukan!</p>
+                        <p class="text-xs text-slate-600" id="resumeBannerInfo">Pemain: - | Tahap Terakhir: -</p>
                     </div>
                 </div>
+                <button onclick="resumeSavedGame()" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-header font-bold py-2.5 px-4 rounded-xl text-sm transition shadow flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Lanjutkan Permainan Terakhir</span>
+                </button>
+            </div>
+            
+            <div class="bg-teal-50 p-4 rounded-2xl mb-6 border border-teal-100 text-left">
+                <label for="playerName" class="block text-xs font-bold text-teal-800 uppercase tracking-wider mb-2">
+                    <i class="fa-solid fa-user-graduate mr-1"></i> Masukkan Nama Lengkapmu:
+                </label>
+                <input type="text" id="playerName" placeholder="Contoh: Ahmad Fauzi" class="w-full px-4 py-3 rounded-xl border-2 border-teal-200 focus:border-teal-500 focus:outline-none font-semibold text-slate-700 text-base">
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-start gap-4">
-                    <div class="bg-sky-100 text-sky-600 p-4 rounded-2xl text-2xl">
-                        <i class="fa-solid fa-book-open"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-fredoka text-lg font-bold text-slate-800">Complete Lessons</h3>
-                        <p class="text-xs text-slate-500 mt-1">Explore everyday objects, deep-dive into sides and angles.</p>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-start gap-4">
-                    <div class="bg-amber-100 text-amber-600 p-4 rounded-2xl text-2xl">
-                        <i class="fa-solid fa-users"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-fredoka text-lg font-bold text-slate-800">4 Group Tournament</h3>
-                        <p class="text-xs text-slate-500 mt-1">Preliminaries to Finals with upbeat music and buzzer rounds!</p>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-start gap-4">
-                    <div class="bg-rose-100 text-rose-600 p-4 rounded-2xl text-2xl">
-                        <i class="fa-solid fa-pen-nib"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-fredoka text-lg font-bold text-slate-800">Reflection & Practice</h3>
-                        <p class="text-xs text-slate-500 mt-1">Create your own simple shape sentences and review key concepts.</p>
-                    </div>
-                </div>
+            <div class="space-y-3">
+                <button onclick="startGame()" class="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-header font-bold py-3.5 px-6 rounded-2xl text-lg shadow-lg shadow-teal-500/30 transition transform active:scale-95 flex items-center justify-center space-x-2">
+                    <span id="startBtnText">Mulai Baru</span>
+                    <i class="fa-solid fa-circle-play"></i>
+                </button>
             </div>
 
-            <div class="mt-8 text-center text-xs text-slate-400">
-                Elementary School Interactive Module • Designed with care by <span class="font-bold text-slate-600">Rizky Wijayanto</span>
+            <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500 flex justify-between items-center">
+                <span><i class="fa-solid fa-book-quran mr-1"></i> Kelas 2 SD - KBC</span>
+                <span>Author: <strong>Raesha Anindira Naifa W.</strong></span>
             </div>
         </section>
 
-        <!-- 1. STAGE 1 - EXPLORATION -->
-        <section id="page-stage1" class="tab-content hidden">
-            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 mb-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="bg-sky-500 text-white font-fredoka text-sm px-3 py-1 rounded-xl">Stage 1</span>
-                    <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Exploration: Shapes Around Us</h2>
-                </div>
-                <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
-                    Hello wonderful students! In our classroom and all around us, there are many everyday objects shaped like 2D geometric figures. Let's examine them!
-                </p>
-
-                <!-- Grid of Shapes -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Square -->
-                    <div class="bg-sky-50 border-2 border-sky-200 rounded-3xl p-5 text-center flex flex-col items-center hover:shadow-md transition-shadow">
-                        <div class="w-24 h-24 bg-sky-500 rounded-2xl flex items-center justify-center text-white text-4xl shadow-md mb-4 bounce-slow">
-                            <i class="fa-regular fa-square"></i>
-                        </div>
-                        <h3 class="font-fredoka text-xl font-bold text-sky-800 mb-1">Square</h3>
-                        <p class="text-xs text-slate-600 mb-3">Has 4 equal sides.</p>
-                        <div class="mt-auto bg-white px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 shadow-sm w-full border border-sky-100">
-                            <i class="fa-solid fa-box text-sky-500 mr-1"></i> Example: Floor tiles, Photo frame
-                        </div>
-                    </div>
-
-                    <!-- Rectangle -->
-                    <div class="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-5 text-center flex flex-col items-center hover:shadow-md transition-shadow">
-                        <div class="w-28 h-20 bg-emerald-500 rounded-2xl flex items-center justify-center text-white text-4xl shadow-md mb-4 bounce-slow">
-                            <i class="fa-regular fa-rectangle-xmark"></i>
-                        </div>
-                        <h3 class="font-fredoka text-xl font-bold text-emerald-800 mb-1">Rectangle</h3>
-                        <p class="text-xs text-slate-600 mb-3">Opposite sides are equal.</p>
-                        <div class="mt-auto bg-white px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 shadow-sm w-full border border-emerald-100">
-                            <i class="fa-solid fa-book text-emerald-500 mr-1"></i> Example: Blackboard, Notebook
-                        </div>
-                    </div>
-
-                    <!-- Triangle -->
-                    <div class="bg-amber-50 border-2 border-amber-200 rounded-3xl p-5 text-center flex flex-col items-center hover:shadow-md transition-shadow">
-                        <div class="w-24 h-24 bg-amber-500 rounded-xl flex items-center justify-center text-white text-3xl shadow-md mb-4 bounce-slow" style="clip-path: polygon(50% 0%, 0% 100%, 100% 100%);">
-                            <i class="fa-solid fa-caret-up opacity-0"></i>
-                        </div>
-                        <h3 class="font-fredoka text-xl font-bold text-amber-800 mb-1">Triangle</h3>
-                        <p class="text-xs text-slate-600 mb-3">Has 3 sides and 3 angles.</p>
-                        <div class="mt-auto bg-white px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 shadow-sm w-full border border-amber-100">
-                            <i class="fa-solid fa-ruler-triangle text-amber-500 mr-1"></i> Example: Triangle ruler, Road sign
-                        </div>
-                    </div>
-
-                    <!-- Circle -->
-                    <div class="bg-rose-50 border-2 border-rose-200 rounded-3xl p-5 text-center flex flex-col items-center hover:shadow-md transition-shadow">
-                        <div class="w-24 h-24 bg-rose-500 rounded-full flex items-center justify-center text-white text-4xl shadow-md mb-4 bounce-slow">
-                            <i class="fa-regular fa-circle"></i>
-                        </div>
-                        <h3 class="font-fredoka text-xl font-bold text-rose-800 mb-1">Circle</h3>
-                        <p class="text-xs text-slate-600 mb-3">Curved side with zero angles.</p>
-                        <div class="mt-auto bg-white px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 shadow-sm w-full border border-rose-100">
-                            <i class="fa-solid fa-clock text-rose-500 mr-1"></i> Example: Wall clock, Coin, Bicycle wheel
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mini Check -->
-            <div class="bg-indigo-50 border border-indigo-100 rounded-3xl p-6 text-center">
-                <h3 class="font-fredoka text-lg font-bold text-indigo-900 mb-2">Quick Guess Check!</h3>
-                <p id="exploration-question" class="text-sm text-indigo-700 mb-4">What shape is a classroom wall clock?</p>
-                <div id="exploration-options" class="flex flex-wrap justify-center gap-3">
-                    <button onclick="checkExploration('Circle', true)" class="bg-white hover:bg-indigo-600 hover:text-white text-indigo-800 font-semibold px-5 py-2.5 rounded-xl shadow-sm border border-indigo-200 transition-colors">Circle</button>
-                    <button onclick="checkExploration('Square', false)" class="bg-white hover:bg-indigo-600 hover:text-white text-indigo-800 font-semibold px-5 py-2.5 rounded-xl shadow-sm border border-indigo-200 transition-colors">Square</button>
-                    <button onclick="checkExploration('Triangle', false)" class="bg-white hover:bg-indigo-600 hover:text-white text-indigo-800 font-semibold px-5 py-2.5 rounded-xl shadow-sm border border-indigo-200 transition-colors">Triangle</button>
-                </div>
-                <p id="exploration-feedback" class="mt-3 text-sm font-bold"></p>
-            </div>
-
-            <!-- Creator Name footer -->
-            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
-                Exploration Module • Prepared by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
-            </div>
-        </section>
-
-        <!-- 2. STAGE 2 - COLLABORATION -->
-        <section id="page-stage2" class="tab-content hidden">
-            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 mb-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="bg-emerald-500 text-white font-fredoka text-sm px-3 py-1 rounded-xl">Stage 2</span>
-                    <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Collaboration: Solving a Simple Problem</h2>
-                </div>
-                <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
-                    Work together with your group members to solve a classroom puzzle regarding organizing objects by their geometric shapes!
-                </p>
-
-                <div class="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-6 mb-6">
-                    <div class="flex items-start gap-4">
-                        <div class="bg-emerald-500 text-white p-3 rounded-2xl text-2xl shrink-0">
-                            <i class="fa-solid fa-hands-holding-child"></i>
-                        </div>
-                        <div>
-                            <span class="bg-emerald-200 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg">Group Case Study</span>
-                            <h3 class="font-fredoka text-lg font-bold text-emerald-900 mt-2">Organizing the Math Supply Boxes</h3>
-                            <p class="text-sm text-slate-700 mt-1 leading-relaxed">
-                                Teacher asked Ben and his group to sort math teaching tools into specific storage boxes so the classroom stays neat. Help them place each item into the correct matching container!
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
-                        <h4 class="font-fredoka font-bold text-slate-800 mb-3"><i class="fa-solid fa-list-check text-indigo-500 mr-2"></i> Choose the Right Container for:</h4>
-                        <div id="collab-item-box" class="bg-white p-4 rounded-xl border border-slate-200 text-center mb-4 shadow-sm">
-                            <span class="text-xs text-slate-400 block mb-1">Item to sort:</span>
-                            <span id="collab-current-item" class="font-fredoka text-lg font-bold text-indigo-600">Drawing Book Cover</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="checkCollab('Rectangle')" class="bg-indigo-50 hover:bg-indigo-500 hover:text-white text-indigo-700 font-semibold py-2 px-3 rounded-xl text-xs border border-indigo-200 transition-colors">Rectangle Box</button>
-                            <button onclick="checkCollab('Triangle')" class="bg-indigo-50 hover:bg-indigo-500 hover:text-white text-indigo-700 font-semibold py-2 px-3 rounded-xl text-xs border border-indigo-200 transition-colors">Triangle Box</button>
-                            <button onclick="checkCollab('Circle')" class="bg-indigo-50 hover:bg-indigo-500 hover:text-white text-indigo-700 font-semibold py-2 px-3 rounded-xl text-xs border border-indigo-200 transition-colors">Circle Box</button>
-                            <button onclick="checkCollab('Square')" class="bg-indigo-50 hover:bg-indigo-500 hover:text-white text-indigo-700 font-semibold py-2 px-3 rounded-xl text-xs border border-indigo-200 transition-colors">Square Box</button>
-                        </div>
-                    </div>
-
-                    <div class="bg-indigo-900 text-white rounded-2xl p-5 flex flex-col justify-between">
-                        <div>
-                            <h4 class="font-fredoka font-bold text-amber-300 mb-2"><i class="fa-solid fa-lightbulb mr-2"></i> Group Discussion Notes</h4>
-                            <p id="collab-status" class="text-xs text-indigo-100 leading-relaxed">
-                                Discuss with your team: Why should a drawing book go into the rectangle box? Because its opposite sides have equal lengths!
-                            </p>
-                        </div>
-                        <div class="mt-4 pt-3 border-t border-indigo-800 flex justify-between items-center text-xs text-indigo-200">
-                            <span>Challenge Status: <strong id="collab-progress" class="text-emerald-400">Item 1 of 3</strong></span>
-                            <button onclick="nextCollabItem()" id="collab-next-btn" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-3 py-1.5 rounded-lg hidden">Next Item <i class="fa-solid fa-arrow-right ml-1"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
-                Collaboration Module • Prepared by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
-            </div>
-        </section>
-
-        <!-- 3. STAGE 3 - COMMUNICATION & PRESENTATION -->
-        <section id="page-stage3" class="tab-content hidden">
-            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 mb-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="bg-amber-500 text-white font-fredoka text-sm px-3 py-1 rounded-xl">Stage 3</span>
-                    <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Communication & Presentation: Sides & Angles</h2>
-                </div>
-                <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
-                    Let's present our findings to the class! We will explore in depth the two main components of 2D shapes: <strong>Sides (Edges)</strong> and <strong>Angles (Corners)</strong>.
-                </p>
-
-                <!-- Presentation Slides Card -->
-                <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-3xl p-6 sm:p-8 relative">
-                    <div class="flex justify-between items-center mb-6">
-                        <span id="slide-number" class="bg-amber-500 text-white font-bold text-xs px-3 py-1 rounded-full font-fredoka">Slide 1 of 4</span>
-                        <div class="flex gap-2">
-                            <button onclick="prevSlide()" class="bg-white hover:bg-amber-100 text-slate-700 w-9 h-9 rounded-full shadow-sm flex items-center justify-center font-bold border border-amber-200"><i class="fa-solid fa-chevron-left"></i></button>
-                            <button onclick="nextSlide()" class="bg-white hover:bg-amber-100 text-slate-700 w-9 h-9 rounded-full shadow-sm flex items-center justify-center font-bold border border-amber-200"><i class="fa-solid fa-chevron-right"></i></button>
-                        </div>
-                    </div>
-
-                    <div id="slide-content-container" class="min-h-[220px] flex flex-col justify-center">
-                        <!-- Injected via JS -->
-                    </div>
-                </div>
-
-                <!-- Deep Explanations -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-                        <h4 class="font-fredoka text-sm font-bold text-slate-800 mb-1 flex items-center gap-2">
-                            <i class="fa-solid fa-ruler text-indigo-500"></i> What is a Side (Edge)?
-                        </h4>
-                        <p class="text-xs text-slate-600 leading-relaxed">
-                            A side is a straight or curved line segment that forms the outer boundary of a 2D shape. For example, a square has 4 straight boundary lines.
-                        </p>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-                        <h4 class="font-fredoka text-sm font-bold text-slate-800 mb-1 flex items-center gap-2">
-                            <i class="fa-solid fa-angles-right text-amber-500"></i> What is an Angle (Corner)?
-                        </h4>
-                        <p class="text-xs text-slate-600 leading-relaxed">
-                            An angle is formed where two straight sides meet at a corner point. A square has 4 corner angles where its sides join.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
-                Presentation Module • Prepared by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
-            </div>
-        </section>
-
-        <!-- 4. STAGE 4 - TOURNAMENT GAME -->
-        <section id="page-stage4" class="tab-content hidden">
-            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 mb-6 relative">
-                
-                <!-- Music Control Bar -->
-                <div class="bg-gradient-to-r from-amber-400 via-rose-400 to-indigo-500 text-white rounded-2xl p-3 mb-6 flex flex-wrap items-center justify-between gap-3 shadow-md">
-                    <div class="flex items-center gap-2">
-                        <div class="bg-white/20 p-2 rounded-xl text-lg"><i class="fa-solid fa-music animate-bounce"></i></div>
-                        <div>
-                            <h4 class="font-fredoka font-bold text-sm leading-tight">Energetic Tournament Audio</h4>
-                            <p class="text-[10px] text-white/80">Synthesized Retro Upbeat Loops & Sound FX</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="toggleMusic()" id="music-toggle-btn" class="bg-white text-indigo-700 hover:bg-amber-100 font-bold px-3 py-1.5 rounded-xl text-xs shadow transition-transform hover:scale-105 flex items-center gap-1.5">
-                            <i class="fa-solid fa-volume-high" id="music-icon"></i> <span id="music-btn-text">Music: ON</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="bg-rose-500 text-white font-fredoka text-sm px-3 py-1 rounded-xl">Stage 4</span>
-                            <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Group Tournament Battle Game</h2>
-                        </div>
-                        <p class="text-slate-600 text-xs sm:text-sm">4 competing groups: <strong class="text-rose-600">Red</strong>, <strong class="text-amber-600">Yellow</strong>, <strong class="text-emerald-600">Green</strong>, and <strong class="text-slate-900">Black</strong>!</p>
-                    </div>
-                    <div id="tournament-status-badge" class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-2xl font-bold text-xs flex items-center gap-2">
-                        <i class="fa-solid fa-flag"></i> Status: Tournament Setup Bracket
-                    </div>
-                </div>
-
-                <!-- VIEW 4A: SETUP BRACKET -->
-                <div id="tournament-setup-view" class="space-y-6">
-                    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-3xl p-6">
-                        <h3 class="font-fredoka text-lg font-bold text-indigo-900 mb-3"><i class="fa-solid fa-sitemap mr-2 text-indigo-600"></i> Tournament Bracket Structure</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                            <!-- Match 1 -->
-                            <div class="bg-white p-4 rounded-2xl border border-indigo-200 shadow-sm">
-                                <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-2">Prelim Match 1</span>
-                                <div class="flex justify-around items-center text-sm font-fredoka font-bold">
-                                    <span class="text-rose-600 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200">Red Group</span>
-                                    <span class="text-slate-400">VS</span>
-                                    <span class="text-amber-600 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">Yellow Group</span>
-                                </div>
-                                <button onclick="startMatch(1)" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl text-xs transition-colors shadow-sm">Start Match 1</button>
-                            </div>
-
-                            <!-- Match 2 -->
-                            <div class="bg-white p-4 rounded-2xl border border-indigo-200 shadow-sm">
-                                <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-2">Prelim Match 2</span>
-                                <div class="flex justify-around items-center text-sm font-fredoka font-bold">
-                                    <span class="text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">Green Group</span>
-                                    <span class="text-slate-400">VS</span>
-                                    <span class="text-slate-900 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-300">Black Group</span>
-                                </div>
-                                <button onclick="startMatch(2)" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl text-xs transition-colors shadow-sm">Start Match 2</button>
-                            </div>
-
-                            <!-- Final Match -->
-                            <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 shadow-sm flex flex-col justify-between">
-                                <div>
-                                    <span class="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-2"><i class="fa-solid fa-trophy mr-1"></i> Championship Final</span>
-                                    <div class="text-xs text-slate-600 mb-2 font-medium">Winner Match 1 vs Winner Match 2</div>
-                                </div>
-                                <button onclick="startFinalMatch()" id="final-btn" disabled class="mt-3 w-full bg-slate-300 text-slate-500 font-bold py-2 rounded-xl text-xs cursor-not-allowed transition-colors">Start Finals</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Scoreboard -->
-                    <div class="bg-slate-50 border border-slate-200 rounded-3xl p-5">
-                        <h4 class="font-fredoka text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-chart-simple text-indigo-500 mr-2"></i> Current Group Scores</h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl text-center">
-                                <span class="text-xs font-bold text-rose-700 block mb-1">Red Group</span>
-                                <span id="score-red" class="font-fredoka text-2xl font-bold text-rose-600">0</span>
-                            </div>
-                            <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-center">
-                                <span class="text-xs font-bold text-amber-700 block mb-1">Yellow Group</span>
-                                <span id="score-yellow" class="font-fredoka text-2xl font-bold text-amber-600">0</span>
-                            </div>
-                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-center">
-                                <span class="text-xs font-bold text-emerald-700 block mb-1">Green Group</span>
-                                <span id="score-green" class="font-fredoka text-2xl font-bold text-emerald-600">0</span>
-                            </div>
-                            <div class="bg-slate-100 border border-slate-300 p-4 rounded-2xl text-center">
-                                <span class="text-xs font-bold text-slate-700 block mb-1">Black Group</span>
-                                <span id="score-black" class="font-fredoka text-2xl font-bold text-slate-800">0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VIEW 4B: BATTLE ARENA (10 Questions Buzzer Rebutan) -->
-                <div id="tournament-battle-view" class="hidden space-y-6">
-                    <div class="bg-indigo-900 text-white p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <div>
-                            <span id="battle-match-title" class="bg-amber-400 text-slate-900 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Prelim Match 1</span>
-                            <h3 class="font-fredoka text-lg font-bold mt-2"><span id="team-a-name">Red</span> vs <span id="team-b-name">Yellow</span></h3>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <div class="text-right">
-                                <span class="text-xs text-indigo-200 block">Question</span>
-                                <span class="font-fredoka text-xl font-bold text-amber-300"><span id="current-q-num">1</span> / 10</span>
-                            </div>
-                            <button onclick="exitMatchToSetup()" class="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-2 rounded-xl font-semibold transition-colors">Exit Match</button>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-50 border-2 border-indigo-100 rounded-3xl p-6 text-center">
-                        <span id="question-category" class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-lg inline-block mb-3">Sides & Angles</span>
-                        <h4 id="question-text" class="font-fredoka text-lg sm:text-xl font-bold text-slate-800 mb-6 max-w-2xl mx-auto">
-                            Question will appear here...
-                        </h4>
-
-                        <div id="buzzer-prompt-area" class="mb-6">
-                            <div class="bg-amber-100 border border-amber-300 text-amber-900 p-3 rounded-2xl text-sm font-semibold max-w-md mx-auto animate-pulse">
-                                <i class="fa-solid fa-bell mr-2"></i> READY! Which group hits the buzzer first?
-                            </div>
-                        </div>
-
-                        <div id="battle-options-area" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto hidden">
-                            <!-- Options injected by JS -->
-                        </div>
-
-                        <div id="active-buzzers-area" class="flex flex-wrap justify-center gap-4 mt-6">
-                            <!-- Buzzers injected by JS -->
-                        </div>
-
-                        <p id="battle-feedback" class="mt-4 text-sm font-bold"></p>
-                    </div>
-                </div>
-
-                <!-- VIEW 4C: MATCH RESULT / WINNER -->
-                <div id="tournament-result-view" class="hidden text-center py-8">
-                    <div class="w-20 h-20 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-inner">
+        <!-- Dashboard Level / Tahap Map -->
+        <section id="levelScreen" class="hidden space-y-6">
+            <div class="bg-white/90 rounded-3xl p-5 shadow-lg border border-white flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-2xl font-header font-bold shadow-sm">
                         <i class="fa-solid fa-trophy"></i>
                     </div>
-                    <h3 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800 mb-2" id="winner-announcement">Match Winner!</h3>
-                    <p class="text-sm text-slate-600 mb-6" id="winner-details">The winning group collected the highest score with speed and accuracy.</p>
-                    <button onclick="returnToSetupAfterMatch()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-2xl shadow-md transition-transform hover:scale-105">Back to Bracket</button>
+                    <div>
+                        <h2 class="font-header font-bold text-xl text-slate-800">Pilih Tahap Tantangan</h2>
+                        <p class="text-xs text-slate-500">Progress kamu <span class="text-emerald-600 font-bold"><i class="fa-solid fa-floppy-disk"></i> tersimpan otomatis</span>!</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 bg-slate-100 px-4 py-2 rounded-2xl">
+                    <span class="text-xs text-slate-500 font-bold">Pemain:</span>
+                    <span id="displayPlayerName" class="font-header font-bold text-teal-700">Siswa</span>
+                    <button onclick="resetProgress()" class="text-xs text-rose-500 font-bold hover:text-rose-700 ml-2 border-l border-slate-300 pl-3 flex items-center space-x-1" title="Riset Ulang Game">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Reset</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
-                Tournament Game Module • Prepared by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
+            <!-- Level Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="levelGrid">
+                <!-- Javascript will inject level cards here -->
             </div>
         </section>
 
-        <!-- 5. STAGE 5 - REFLECTION -->
-        <section id="page-stage5" class="tab-content hidden">
-            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 mb-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="bg-rose-500 text-white font-fredoka text-sm px-3 py-1 rounded-xl">Stage 5</span>
-                    <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Daily Learning Reflection</h2>
+        <!-- Gameplay Screen -->
+        <section id="gameplayScreen" class="hidden max-w-3xl mx-auto w-full">
+            <!-- Game Top Nav -->
+            <div class="bg-white rounded-2xl p-4 shadow-md border border-slate-100 mb-5 flex items-center justify-between">
+                <button onclick="goHome()" class="px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                    <i class="fa-solid fa-house text-sm"></i>
+                    <span>Menu Utama</span>
+                </button>
+                <div class="text-center">
+                    <span id="stageTitleHeader" class="font-header font-bold text-sm text-teal-800 uppercase tracking-wider block">TAHAP 1</span>
+                    <span id="questionProgressText" class="text-xs text-slate-500 font-semibold">Soal 1 dari 8</span>
                 </div>
-                <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
-                    Fantastic job! We have completed our 2D shapes adventure. Now let's summarize what we learned and draft easy-to-understand shape sentences.
-                </p>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-rose-50 border border-rose-200 rounded-3xl p-5">
-                        <h3 class="font-fredoka text-base font-bold text-rose-900 mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-heart text-rose-500"></i> Guide to Making Shape Sentences
-                        </h3>
-                        <ul class="text-xs text-slate-700 space-y-2 list-disc list-inside">
-                            <li>Name the 2D shape (e.g., Square, Triangle).</li>
-                            <li>State the number of sides (e.g., It has 4 sides).</li>
-                            <li>State the number of angles or special feature (e.g., It has 4 right angles).</li>
-                            <li>Give an everyday object example (e.g., like a floor tile).</li>
-                        </ul>
-                        <div class="mt-4 bg-white p-3 rounded-xl border border-rose-100 text-xs font-semibold text-rose-800">
-                            <em>"Example Sentence: A notebook is shaped like a rectangle because it has 4 sides and 4 angles."</em>
-                        </div>
-                    </div>
-
-                    <div class="bg-indigo-50 border border-indigo-200 rounded-3xl p-5 flex flex-col justify-between">
-                        <div>
-                            <h3 class="font-fredoka text-base font-bold text-indigo-900 mb-2 flex items-center gap-2">
-                                <i class="fa-solid fa-pen-to-square text-indigo-600"></i> My Reflection & Sentence Draft
-                            </h3>
-                            <p class="text-xs text-slate-600 mb-3">Write your own custom shape sentence below:</p>
-                            <textarea id="reflection-input" rows="3" class="w-full p-3 rounded-2xl border border-indigo-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white" placeholder="Example: A wall clock is shaped like a circle because it has a curved side and zero angles..."></textarea>
-                        </div>
-                        <div class="mt-3 flex justify-between items-center">
-                            <button onclick="saveReflectionNote()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow-sm">Save Note</button>
-                            <span id="reflection-saved-msg" class="text-xs text-emerald-600 font-bold hidden"><i class="fa-solid fa-check mr-1"></i> Saved successfully!</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 border border-slate-200 rounded-3xl p-5">
-                    <h4 class="font-fredoka text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i> Key Takeaways Today:</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm font-medium">✨ Square: 4 equal sides, 4 angles.</div>
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm font-medium">✨ Rectangle: 4 sides (opposite equal), 4 angles.</div>
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm font-medium">✨ Triangle: 3 sides and 3 angles.</div>
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm font-medium">✨ Circle: Curved side, zero angles.</div>
-                    </div>
+                <div class="bg-teal-50 text-teal-700 px-3 py-1.5 rounded-xl font-header font-bold text-xs flex items-center space-x-1">
+                    <i class="fa-solid fa-star text-amber-400"></i>
+                    <span>Skor: <span id="currentScoreDisplay">0</span></span>
                 </div>
             </div>
 
-            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
-                Reflection Module • Prepared by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
+            <!-- Question Card Container -->
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-white min-h-[380px] flex flex-col justify-between" id="questionBox">
+                <!-- Inject Question Here -->
+            </div>
+
+            <!-- Bottom Navigation -->
+            <div class="mt-4 flex justify-between items-center">
+                <button id="btnPrev" onclick="prevQuestion()" class="hidden px-5 py-2.5 rounded-xl bg-slate-200 text-slate-700 font-bold text-sm hover:bg-slate-300 transition">
+                    <i class="fa-solid fa-chevron-left mr-1"></i> Sebelum
+                </button>
+                <div class="flex-grow"></div>
+                <button id="btnNext" onclick="nextQuestion()" class="px-6 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-header font-bold text-sm shadow-md transition flex items-center space-x-2">
+                    <span>Lanjut</span>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Final Summary & Certificate Screen -->
+        <section id="certificateScreen" class="hidden max-w-2xl mx-auto w-full">
+            <div class="bg-white rounded-3xl p-6 md:p-10 shadow-2xl border-4 border-amber-300 relative text-center">
+                <!-- Decorative Badges -->
+                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-amber-400 text-amber-950 font-header font-bold px-6 py-2 rounded-full shadow-md uppercase tracking-wider text-xs md:text-sm border-2 border-white">
+                    🏆 Lulus Asesmen Sumatif
+                </div>
+
+                <div class="my-4">
+                    <i class="fa-solid fa-certificate text-6xl text-amber-400"></i>
+                </div>
+
+                <h2 class="font-header font-bold text-2xl md:text-3xl text-teal-900">SERTIFIKAT KELULUSAN</h2>
+                <p class="text-slate-500 text-xs md:text-sm mt-1">Diberikan sebagai penghargaan kepada:</p>
+
+                <h3 id="certPlayerName" class="font-header font-bold text-2xl md:text-3xl text-emerald-600 my-3 underline decoration-amber-300 decoration-wavy">
+                    Nama Siswa
+                </h3>
+
+                <p class="text-slate-600 text-sm max-w-md mx-auto leading-relaxed">
+                    Telah menyelesaikan seluruh <span class="font-bold text-teal-700">25 Soal Fikih Kelas II SD</span> pada Mata Pelajaran Fikih (Adzan, Iqamah & Shalat Fardhu) dengan Nilai:
+                </p>
+
+                <div class="my-5 inline-block bg-gradient-to-r from-teal-50 to-emerald-50 px-8 py-4 rounded-2xl border-2 border-teal-200">
+                    <span class="text-xs uppercase text-slate-500 block font-bold">Total Skor Akhir</span>
+                    <span id="finalScoreText" class="font-header font-bold text-4xl text-teal-700">100</span>
+                </div>
+
+                <!-- Author Sign Footer -->
+                <div class="mt-6 pt-6 border-t border-dashed border-slate-200 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 gap-4">
+                    <div class="text-left">
+                        <p class="font-semibold text-slate-700">Kurikulum Merdeka KBC</p>
+                        <p>Tahun Pelajaran 2026/2027</p>
+                    </div>
+                    <div class="text-center md:text-right">
+                        <p class="text-[10px] uppercase text-teal-600 font-bold">Penyusun / Author</p>
+                        <p class="font-header font-bold text-slate-800 text-sm">Raesha Anindira Naifa W.</p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-8 flex flex-wrap justify-center gap-3">
+                    <button onclick="goHome()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-header font-bold text-sm shadow transition flex items-center space-x-2">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Menu Utama</span>
+                    </button>
+                    <button onclick="window.print()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-sm shadow transition flex items-center space-x-2">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Cetak Sertifikat</span>
+                    </button>
+                </div>
             </div>
         </section>
 
     </main>
 
-    <!-- GLOBAL FOOTER -->
-    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
-        <div class="max-w-6xl mx-auto px-4 text-center text-xs text-slate-500 font-medium">
-            2D Geometric Shapes Learning Module & Game • Created by <span class="text-indigo-600 font-bold">Rizky Wijayanto</span>
+    <!-- Modal Notification Alert (No alert() used) -->
+    <div id="customModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl border border-white transform transition-all scale-95">
+            <div id="modalIcon" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <h3 id="modalTitle" class="font-header font-bold text-xl text-slate-800 mb-2">Informasi</h3>
+            <p id="modalMessage" class="text-slate-600 text-sm mb-5">Pesan modal disini.</p>
+            <button onclick="closeModal()" class="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-sm transition">
+                Mengerti
+            </button>
         </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white/80 border-t border-slate-200/60 py-3 text-center text-xs text-slate-500">
+        <p>Game Edukasi ASAS Fikih Kelas 2 SD &copy; 2026/2027 | Penyusun: <strong class="text-teal-700">Raesha Anindira Naifa W.</strong></p>
     </footer>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- Game Logic Script -->
     <script>
-        // --- WEB AUDIO API SYNTHESIZER FOR BACKGROUND MUSIC & SFX ---
-        let audioCtx = null;
-        let isMusicPlaying = false;
-        let musicMuted = false;
-        let bgInterval = null;
-        let noteIndex = 0;
+        /* --------------------------------------------------
+           Game State Management & Auto-Save
+        -------------------------------------------------- */
+        let state = {
+            playerName: "",
+            currentStage: 1,
+            unlockedStages: [1], // Level 1 is unlocked by default
+            stageScores: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+            userAnswers: {}, // key: questionId
+            currentQuestionIndexInStage: 0,
+            hasSavedData: false
+        };
 
-        // Upbeat Chiptune Note Sequence (Frequencies in Hz)
-        const musicNotes = [
-            261.63, 329.63, 392.00, 523.25, 392.00, 329.63,
-            293.66, 349.23, 440.00, 587.33, 440.00, 349.23,
-            329.63, 392.00, 493.88, 659.25, 493.88, 392.00,
-            349.23, 440.00, 523.25, 698.46, 523.25, 440.00
-        ];
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function playSynthNote(freq, duration = 0.15, type = 'square', gainVal = 0.05) {
-            if (!audioCtx || musicMuted) return;
-            try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch(e) {}
-        }
-
-        function playSFX(type) {
-            initAudio();
-            if (musicMuted) return;
-            if (type === 'buzzer') {
-                playSynthNote(880, 0.1, 'sawtooth', 0.15);
-                setTimeout(() => playSynthNote(1174.66, 0.2, 'sawtooth', 0.15), 100);
-            } else if (type === 'correct') {
-                playSynthNote(523.25, 0.1, 'sine', 0.15);
-                setTimeout(() => playSynthNote(659.25, 0.1, 'sine', 0.15), 100);
-                setTimeout(() => playSynthNote(783.99, 0.25, 'sine', 0.15), 200);
-            } else if (type === 'wrong') {
-                playSynthNote(220, 0.15, 'sawtooth', 0.15);
-                setTimeout(() => playSynthNote(164.81, 0.3, 'sawtooth', 0.15), 150);
-            } else if (type === 'fanfare') {
-                [440, 554.37, 659.25, 880].forEach((f, idx) => {
-                    setTimeout(() => playSynthNote(f, 0.2, 'triangle', 0.2), idx * 120);
-                });
+        // Load progress from localStorage if available
+        function loadSaveData() {
+            const saved = localStorage.getItem('fikih_game_progress_v2');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed, hasSavedData: true };
+                    updateWelcomeScreenResumeInfo();
+                } catch(e) { console.error(e); }
             }
         }
 
-        function startBgMusic() {
-            initAudio();
-            if (isMusicPlaying) return;
-            isMusicPlaying = true;
-            noteIndex = 0;
-            bgInterval = setInterval(() => {
-                if (!musicMuted && audioCtx) {
-                    playSynthNote(musicNotes[noteIndex], 0.12, 'square', 0.03);
-                    noteIndex = (noteIndex + 1) % musicNotes.length;
+        function saveData() {
+            state.hasSavedData = true;
+            localStorage.setItem('fikih_game_progress_v2', JSON.stringify(state));
+        }
+
+        function updateWelcomeScreenResumeInfo() {
+            if (state.hasSavedData && state.playerName) {
+                const banner = document.getElementById('resumeBanner');
+                const info = document.getElementById('resumeBannerInfo');
+                if (banner && info) {
+                    banner.classList.remove('hidden');
+                    const lastStage = Math.max(...state.unlockedStages);
+                    info.innerHTML = `Pemain: <strong>${state.playerName}</strong> | Tahap Terbuka: <strong>Tahap ${lastStage}</strong> | Total Skor: <strong>${calculateTotalScore()}</strong>`;
+                    document.getElementById('playerName').value = state.playerName;
                 }
-            }, 180);
+            }
         }
 
-        function stopBgMusic() {
-            if (bgInterval) clearInterval(bgInterval);
-            isMusicPlaying = false;
+        function resumeSavedGame() {
+            if (!state.playerName) state.playerName = "Siswa Sholeh";
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('levelScreen').classList.remove('hidden');
+            document.getElementById('displayPlayerName').innerText = state.playerName;
+            document.getElementById('headerHomeBtn').classList.remove('hidden');
+            renderLevels();
         }
 
-        function toggleMusic() {
-            initAudio();
-            musicMuted = !musicMuted;
-            const icon = document.getElementById('music-icon');
-            const btnText = document.getElementById('music-btn-text');
-            if (musicMuted) {
-                icon.className = 'fa-solid fa-volume-xmark';
-                btnText.innerText = 'Music: OFF';
+        function resetProgress() {
+            openModal(
+                "Konfirmasi Reset Progress",
+                "Apakah kamu yakin ingin menghapus progress yang tersimpan dan mengulang permainan dari awal?",
+                "fa-triangle-exclamation text-rose-500",
+                () => {
+                    localStorage.removeItem('fikih_game_progress_v2');
+                    state = {
+                        playerName: "",
+                        currentStage: 1,
+                        unlockedStages: [1],
+                        stageScores: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+                        userAnswers: {},
+                        currentQuestionIndexInStage: 0,
+                        hasSavedData: false
+                    };
+                    document.getElementById('resumeBanner').classList.add('hidden');
+                    document.getElementById('playerName').value = '';
+                    goHome();
+                },
+                true // show cancel button
+            );
+        }
+
+        /* --------------------------------------------------
+           Navigation & UI Renderers
+        -------------------------------------------------- */
+        function goHome() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('gameplayScreen').classList.add('hidden');
+            document.getElementById('certificateScreen').classList.add('hidden');
+            
+            if (state.playerName) {
+                document.getElementById('levelScreen').classList.remove('hidden');
+                document.getElementById('displayPlayerName').innerText = state.playerName;
+                document.getElementById('headerHomeBtn').classList.remove('hidden');
+                renderLevels();
             } else {
-                icon.className = 'fa-solid fa-volume-high';
-                btnText.innerText = 'Music: ON';
-                if (!isMusicPlaying) startBgMusic();
+                document.getElementById('welcomeScreen').classList.remove('hidden');
+                document.getElementById('headerHomeBtn').classList.add('hidden');
             }
         }
 
-        // --- NAVIGATION TABS ---
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
-                btn.classList.add('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
-            });
-
-            document.getElementById('page-' + tabId).classList.remove('hidden');
-            const activeBtn = document.getElementById('nav-' + tabId);
-            if(activeBtn) {
-                activeBtn.classList.remove('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
-                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
-            }
-
-            // Audio trigger logic for Tournament Tab
-            if (tabId === 'stage4') {
-                if (!musicMuted && !isMusicPlaying) startBgMusic();
+        function startGame() {
+            const input = document.getElementById('playerName').value.trim();
+            if (input !== "") {
+                state.playerName = input;
             } else {
-                stopBgMusic();
+                state.playerName = "Siswa Sholeh";
             }
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            saveData();
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('levelScreen').classList.remove('hidden');
+            document.getElementById('displayPlayerName').innerText = state.playerName;
+            document.getElementById('headerHomeBtn').classList.remove('hidden');
+            renderLevels();
         }
 
-        // --- STAGE 1: EXPLORATION MINI CHECK ---
-        function checkExploration(answer, isCorrect) {
-            const feedback = document.getElementById('exploration-feedback');
-            if(isCorrect) {
-                playSFX('correct');
-                feedback.innerHTML = '<span class="text-emerald-600"><i class="fa-solid fa-circle-check mr-1"></i> Wonderful! Correct, a wall clock is shaped like a Circle!</span>';
-            } else {
-                playSFX('wrong');
-                feedback.innerHTML = '<span class="text-rose-500"><i class="fa-solid fa-circle-xmark mr-1"></i> Not quite right, think about the shape of a wall clock!</span>';
-            }
-        }
+        function renderLevels() {
+            const container = document.getElementById('levelGrid');
+            container.innerHTML = '';
 
-        // --- STAGE 2: COLLABORATION MINI GAME ---
-        const collabItems = [
-            { name: "Drawing Book Cover", correct: "Rectangle", desc: "Notebooks and drawing books have opposite sides equal in length." },
-            { name: "Classroom Floor Tile", correct: "Square", desc: "Floor tiles form a square with 4 equal sides." },
-            { name: "Student Triangle Ruler", correct: "Triangle", desc: "Math tool used for drawing and measuring angles." }
-        ];
-        let currentCollabIndex = 0;
+            STAGES.forEach(stg => {
+                const isUnlocked = state.unlockedStages.includes(stg.id);
+                const score = state.stageScores[stg.id] || 0;
+                
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-3xl p-6 shadow-md border-2 ${isUnlocked ? 'border-teal-200 hover:border-teal-400 card-bounce cursor-pointer' : 'border-slate-200 opacity-80'} relative overflow-hidden transition`;
 
-        function checkCollab(selectedBox) {
-            const current = collabItems[currentCollabIndex];
-            const statusEl = document.getElementById('collab-status');
-            const nextBtn = document.getElementById('collab-next-btn');
-
-            if(selectedBox === current.correct) {
-                playSFX('correct');
-                statusEl.innerHTML = `<strong class="text-emerald-300">CORRECT!</strong> ${current.name} belongs in the ${current.correct} box. ${current.desc}`;
-                if(currentCollabIndex < collabItems.length - 1) {
-                    nextBtn.classList.remove('hidden');
+                let statusBadge = '';
+                if (!isUnlocked) {
+                    statusBadge = `<div class="bg-slate-200 text-slate-600 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1">
+                        <i class="fa-solid fa-lock animate-lock text-slate-500"></i>
+                        <span>TERKUNCI</span>
+                    </div>`;
+                } else if (score > 0) {
+                    statusBadge = `<div class="bg-emerald-100 text-emerald-800 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1">
+                        <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                        <span>SKOR: ${score}</span>
+                    </div>`;
                 } else {
-                    nextBtn.classList.add('hidden');
-                    statusEl.innerHTML += `<br><strong class="text-amber-300">🎉 Hurray! Group collaboration challenge completed successfully!</strong>`;
+                    statusBadge = `<div class="bg-amber-100 text-amber-800 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1">
+                        <i class="fa-solid fa-play text-amber-600"></i>
+                        <span>SIAP MAIN</span>
+                    </div>`;
                 }
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-tr ${stg.color} text-white rounded-2xl flex items-center justify-center text-xl shadow-md">
+                            <i class="fa-solid ${stg.icon}"></i>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    <h3 class="font-header font-bold text-lg text-slate-800">${stg.name}</h3>
+                    <p class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">${stg.desc}</p>
+
+                    <button ${isUnlocked ? `onclick="selectStage(${stg.id})"` : 'disabled'} 
+                        class="w-full py-2.5 rounded-xl font-header font-bold text-sm transition flex items-center justify-center space-x-2 ${
+                            isUnlocked 
+                            ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md' 
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        }">
+                        <span>${isUnlocked ? 'Mulai Tahap Ini' : 'Selesaikan Tahap Sebelum'}</span>
+                        <i class="fa-solid ${isUnlocked ? 'fa-arrow-right' : 'fa-lock'}"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function backToLevels() {
+            goHome();
+        }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.2);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'unlock') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('audioIcon');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-lg';
             } else {
-                playSFX('wrong');
-                statusEl.innerHTML = `<strong class="text-amber-300">TRY AGAIN!</strong> ${current.name} is not a ${selectedBox}. Discuss with your group!`;
+                icon.className = 'fa-solid fa-volume-xmark text-lg text-slate-400';
             }
         }
 
-        function nextCollabItem() {
-            currentCollabIndex++;
-            if(currentCollabIndex < collabItems.length) {
-                document.getElementById('collab-current-item').innerText = collabItems[currentCollabIndex].name;
-                document.getElementById('collab-progress').innerText = `Item ${currentCollabIndex + 1} of 3`;
-                document.getElementById('collab-status').innerText = `Discuss with your group: Where should this item be stored?`;
-                document.getElementById('collab-next-btn').classList.add('hidden');
-            }
-        }
-
-        // --- STAGE 3: PRESENTATION SLIDES ---
-        const slides = [
+        /* --------------------------------------------------
+           Game Data & Questions (25 Questions based on Grid)
+        -------------------------------------------------- */
+        const STAGES = [
             {
-                title: "1. Recognizing Square",
-                icon: "fa-regular fa-square text-sky-500",
-                desc: "A square is a 2D shape that has 4 equal straight sides and 4 right-angle corners.",
-                detail: "Everyday examples: Floor tiles, chess board, gift box surface.",
-                properties: "Sides = 4 (Equal length) | Angles = 4 (Right angles)"
+                id: 1,
+                name: "Tahap 1",
+                desc: "Pilihan Ganda Kompleks (Soal 1-8)",
+                icon: "fa-list-check",
+                minScoreToUnlockNext: 10,
+                color: "from-blue-500 to-indigo-600",
+                bgColor: "bg-blue-500"
             },
             {
-                title: "2. Recognizing Rectangle",
-                icon: "fa-regular fa-rectangle-xmark text-emerald-500",
-                desc: "A rectangle has 4 sides where opposite sides are equal in length and parallel.",
-                detail: "Everyday examples: Blackboard, notebook, classroom door, windows.",
-                properties: "Sides = 4 (Opposite pairs equal) | Angles = 4 (Right angles)"
+                id: 2,
+                name: "Tahap 2",
+                desc: "Menjodohkan / Matching (Soal 9-13)",
+                icon: "fa-diagram-project",
+                minScoreToUnlockNext: 10,
+                color: "from-emerald-500 to-teal-600",
+                bgColor: "bg-emerald-500"
             },
             {
-                title: "3. Recognizing Triangle",
-                icon: "fa-solid fa-triangle-exclamation text-amber-500",
-                desc: "A triangle is a shape bounded by 3 straight line sides and has 3 corner angles.",
-                detail: "Everyday examples: Triangle ruler, triangular sandwich, warning road signs.",
-                properties: "Sides = 3 | Angles = 3"
+                id: 3,
+                name: "Tahap 3",
+                desc: "Benar / Salah (Soal 14-17)",
+                icon: "fa-toggle-on",
+                minScoreToUnlockNext: 8,
+                color: "from-amber-500 to-orange-600",
+                bgColor: "bg-amber-500"
             },
             {
-                title: "4. Recognizing Circle",
-                icon: "fa-regular fa-circle text-rose-500",
-                desc: "A circle is a shape with one continuous curved side and zero corner angles.",
-                detail: "Everyday examples: Wall clock, coin, bicycle wheel, dinner plate.",
-                properties: "Sides = 1 (Curved) | Angles = 0 (None)"
+                id: 4,
+                name: "Tahap 4",
+                desc: "Isian Singkat (Soal 18-22)",
+                icon: "fa-pen-to-square",
+                minScoreToUnlockNext: 6,
+                color: "from-purple-500 to-violet-600",
+                bgColor: "bg-purple-500"
+            },
+            {
+                id: 5,
+                name: "Tahap 5",
+                desc: "Uraian & Tantangan Akhir (Soal 23-25)",
+                icon: "fa-crown",
+                minScoreToUnlockNext: 10,
+                color: "from-rose-500 to-pink-600",
+                bgColor: "bg-rose-500"
             }
         ];
-        let currentSlideIndex = 0;
 
-        function renderSlide() {
-            const slide = slides[currentSlideIndex];
-            document.getElementById('slide-number').innerText = `Slide ${currentSlideIndex + 1} of ${slides.length}`;
-            const container = document.getElementById('slide-content-container');
-            container.innerHTML = `
-                <div class="flex flex-col sm:flex-row items-center gap-6">
-                    <div class="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-3xl shadow-md flex items-center justify-center text-5xl sm:text-6xl shrink-0 border border-amber-100">
-                        <i class="${slide.icon}"></i>
+        const QUESTIONS = [
+            // --- TAHAP 1: Pilihan Ganda Kompleks (1 - 8) ---
+            {
+                id: 1, stage: 1, type: "pg_kompleks", scoreVal: 2,
+                title: "Soal 1: Sikap Mengumandangkan Adzan",
+                question: "Pilihlah sikap-sikap yang BENAR saat mengumandangkan adzan! (Pilih lebih dari 1)",
+                options: [
+                    { id: "a", text: "Menghadap ke arah Kiblat", correct: true },
+                    { id: "b", text: "Berdiri tegak", correct: true },
+                    { id: "c", text: "Suci dari hadas kecil dan besar", correct: true },
+                    { id: "d", text: "Sambil bercanda dan tertawa", correct: false }
+                ]
+            },
+            {
+                id: 2, stage: 1, type: "pg_kompleks", scoreVal: 2,
+                title: "Soal 2: Perilaku Mencintai Allah Setelah Adzan",
+                question: "Manakah perilaku yang mencerminkan cinta kepada Allah SWT setelah mendengar adzan? (Pilih lebih dari 1)",
+                options: [
+                    { id: "a", text: "Segera bersiap-siap untuk mengambil wudhu dan shalat", correct: true },
+                    { id: "b", text: "Menghentikan kegiatan bermain sejenak", correct: true },
+                    { id: "c", text: "Pura-pura tidak mendengar adzan", correct: false },
+                    { id: "d", text: "Menjawab lafal adzan dengan khusyuk", correct: true }
+                ]
+            },
+            {
+                id: 3, stage: 1, type: "pg_kompleks", scoreVal: 2,
+                title: "Soal 3: Manfaat Adzan",
+                question: "Pilihlah pernyataan yang merupakan manfaat dari adzan! (Pilih lebih dari 1)",
+                options: [
+                    { id: "a", text: "Sebagai penanda masuknya waktu shalat fardhu", correct: true },
+                    { id: "b", text: "Panggilan bagi umat Islam untuk shalat berjamaah", correct: true },
+                    { id: "c", text: "Tanda waktu istirahat dan bermain", correct: false },
+                    { id: "d", text: "Mengusir syaitan dan memberikan kedamaian", correct: true }
+                ]
+            },
+            {
+                id: 4, stage: 1, type: "pg_kompleks", scoreVal: 2,
+                title: "Soal 4: Makna Iqamah",
+                question: "Pilihlah makna iqamah sebelum shalat berjamaah dimulai! (Pilih lebih dari 1)",
+                options: [
+                    { id: "a", text: "Pemberitahuan bahwa shalat fardhu akan segera dimulai", correct: true },
+                    { id: "b", text: "Seruan untuk segera berdiri merapatkan shaf shalat", correct: true },
+                    { id: "c", text: "Pengumuman bahwa waktu shalat masih lama", correct: false }
+                ]
+            },
+            {
+                id: 5, stage: 1, type: "pg_kompleks", scoreVal: 2,
+                title: "Soal 5: Ketentuan Shalat Fardhu",
+                question: "Manakah pernyataan yang BENAR mengenai ketentuan shalat fardhu? (Pilih lebih dari 1)",
+                options: [
+                    { id: "a", text: "Hukumnya Wajib (Fardhu 'Ain) bagi setiap muslim", correct: true },
+                    { id: "b", text: "Dikerjakan 5 waktu dalam sehari semalam", correct: true },
+                    { id: "c", text: "Boleh ditinggalkan jika sedang malas", correct: false }
+                ]
+            },
+            {
+                id: 6, stage: 1, type: "pg_kompleks", scoreVal: 2,
+                title: "Soal 6: Kecintaan Kepada Allah Lewat Shalat",
+                question: "Manakah perilaku yang menunjukkan rasa cinta kepada Allah melalui pelaksanaan shalat? (Pilih lebih dari 1)",
+                options: [
+                    { id: "a", text: "Melaksanakan shalat dengan khusyuk dan tepat waktu", correct: true },
+                    { id: "b", text: "Merasa bahagia dan senang saat dipanggil untuk beribadah", correct: true },
+                    { id: "c", text: "Terburu-buru mengerjakan shalat agar cepat selesai", correct: false }
+                ]
+            },
+            {
+                id: 7, stage: 1, type: "pg_kompleks", scoreVal: 2,
+                title: "Soal 7: Urutan Waktu Shalat Fardhu",
+                question: "Pilihlah urutan waktu shalat fardhu yang BENAR dari pagi hingga malam! (Pilih jawaban benar)",
+                options: [
+                    { id: "a", text: "Subuh -> Dzuhur -> Ashar -> Maghrib -> Isya", correct: true },
+                    { id: "b", text: "Dzuhur -> Subuh -> Maghrib -> Ashar -> Isya", correct: false },
+                    { id: "c", text: "Shalat fardhu diawali dengan shalat Subuh di terbit fajar", correct: true }
+                ]
+            },
+            {
+                id: 8, stage: 1, type: "pg_kompleks", scoreVal: 2,
+                title: "Soal 8: Tanggung Jawab Terhadap Shalat",
+                question: "Tindakan apa saja yang merupakan wujud tanggung jawab terhadap kewajiban shalat? (Pilih lebih dari 1)",
+                options: [
+                    { id: "a", text: "Segera shalat tanpa harus disuruh atau dimarahi orang tua", correct: true },
+                    { id: "b", text: "Tidak menunda-nunda waktu shalat ketika adzan berkumandang", correct: true },
+                    { id: "c", text: "Hanya shalat jika diberi uang jajan", correct: false }
+                ]
+            },
+
+            // --- TAHAP 2: Menjodohkan / Matching (9 - 13) ---
+            {
+                id: 9, stage: 2, type: "matching", scoreVal: 3,
+                title: "Soal 9: Istilah Adzan dan Iqamah",
+                question: "Jodohkan istilah di sebelah kiri dengan pengertiannya di sebelah kanan!",
+                pairs: [
+                    { left: "Adzan", right: "Panggilan masuk waktu shalat" },
+                    { left: "Iqamah", right: "Panggilan shalat segera dimulai" },
+                    { left: "Muadzin", right: "Orang yang mengumandangkan adzan" }
+                ]
+            },
+            {
+                id: 10, stage: 2, type: "matching", scoreVal: 3,
+                title: "Soal 10: Lafal Adzan dan Artinya",
+                question: "Jodohkan lafal adzan dengan arti yang sesuai!",
+                pairs: [
+                    { left: "Hayya 'alas-salah", right: "Mari menunaikan shalat" },
+                    { left: "Hayya 'alal-falah", right: "Mari meraih kemenangan" },
+                    { left: "Allahu Akbar", right: "Allah Maha Besar" }
+                ]
+            },
+            {
+                id: 11, stage: 2, type: "matching", scoreVal: 3,
+                title: "Soal 11: Syarat Muadzin",
+                question: "Jodohkan syarat muadzin dengan penjelasan yang tepat!",
+                pairs: [
+                    { left: "Muslim", right: "Beragama Islam" },
+                    { left: "Berakal", right: "Tidak gila / sehat akalnya" },
+                    { left: "Mumayyiz", right: "Bisa membedakan baik dan buruk" }
+                ]
+            },
+            {
+                id: 12, stage: 2, type: "matching", scoreVal: 3,
+                title: "Soal 12: Jumlah Rakaat Shalat Fardhu",
+                question: "Jodohkan nama shalat fardhu dengan jumlah rakaatnya!",
+                pairs: [
+                    { left: "Shalat Subuh", right: "2 Rakaat" },
+                    { left: "Shalat Maghrib", right: "3 Rakaat" },
+                    { left: "Shalat Dzuhur / Isya", right: "4 Rakaat" }
+                ]
+            },
+            {
+                id: 13, stage: 2, type: "matching", scoreVal: 3,
+                title: "Soal 13: Waktu Pelaksanaan Shalat",
+                question: "Jodohkan nama shalat dengan waktu pelaksanaannya!",
+                pairs: [
+                    { left: "Subuh", right: "Terbit Fajar Shadiq" },
+                    { left: "Dzuhur", right: "Matahari tergelincir ke barat" },
+                    { left: "Maghrib", right: "Terbenam matahari" }
+                ]
+            },
+
+            // --- TAHAP 3: Benar / Salah (14 - 17) ---
+            {
+                id: 14, stage: 3, type: "true_false", scoreVal: 3,
+                title: "Soal 14: Ketentuan Adzan & Iqamah",
+                question: "Tentukan apakah pernyataan berikut BENAR atau SALAH:<br><strong>'Lafal iqamah dikumandangkan secara lebih cepat daripada adzan.'</strong>",
+                correctAnswer: true
+            },
+            {
+                id: 15, stage: 3, type: "true_false", scoreVal: 3,
+                title: "Soal 15: Jawaban Saat Adzan",
+                question: "Tentukan apakah pernyataan berikut BENAR atau SALAH:<br><strong>'Ketika muadzin mengucapkan Hayya 'alas-salah, kita menjawab dengan Laa haula walaa quwwata illa billah.'</strong>",
+                correctAnswer: true
+            },
+            {
+                id: 16, stage: 3, type: "true_false", scoreVal: 3,
+                title: "Soal 16: Syarat Sah Shalat Fardhu",
+                question: "Tentukan apakah pernyataan berikut BENAR atau SALAH:<br><strong>'Suci dari hadas kecil dan hadas besar merupakan salah satu syarat sah shalat.'</strong>",
+                correctAnswer: true
+            },
+            {
+                id: 17, stage: 3, type: "true_false", scoreVal: 3,
+                title: "Soal 17: Sunah Shalat Fardhu",
+                question: "Tentukan apakah pernyataan berikut BENAR atau SALAH:<br><strong>'Membaca surat pendek Al-Qur'an setelah membaca Al-Fatihah hukumnya Wajib, bukan sunah.'</strong>",
+                correctAnswer: false
+            },
+
+            // --- TAHAP 4: Isian Singkat (18 - 22) ---
+            {
+                id: 18, stage: 4, type: "short_answer", scoreVal: 2,
+                title: "Soal 18: Arti Lafaz Adzan",
+                question: "Lafaz adzan <em>'As-salatu khairum minan-naum'</em> dikumandangkan khusus pada shalat Subuh. Apa arti dari lafaz tersebut?",
+                hints: ["Shalat itu lebih baik dari pada ..."],
+                keywords: ["tidur", "daripada tidur"]
+            },
+            {
+                id: 19, stage: 4, type: "short_answer", scoreVal: 2,
+                title: "Soal 19: Anjuran Setelah Adzan",
+                question: "Setelah adzan selesai berkumandang, kita dianjurkan untuk membaca ... dan berdoa.",
+                hints: ["Membaca d... setelah adzan / shalawat"],
+                keywords: ["doa", "do'a", "shalawat", "salawat"]
+            },
+            {
+                id: 20, stage: 4, type: "short_answer", scoreVal: 2,
+                title: "Soal 20: Rukun Shalat Fardhu",
+                question: "Membaca Surah Al-Fatihah dan Ruku' dengan tumakninah termasuk ke dalam ... shalat.",
+                hints: ["R... shalat (hal wajib dalam shalat)"],
+                keywords: ["rukun", "rukun shalat"]
+            },
+            {
+                id: 21, stage: 4, type: "short_answer", scoreVal: 2,
+                title: "Soal 21: Akibat Meninggalkan Shalat",
+                question: "Seseorang yang sengaja meninggalkan shalat fardhu tanpa alasan syar'i akan mendapat ... dari Allah SWT.",
+                hints: ["Lawan kata pahala"],
+                keywords: ["dosa", "siksa", "azab", "berdosa"]
+            },
+            {
+                id: 22, stage: 4, type: "short_answer", scoreVal: 2,
+                title: "Soal 22: Bacaan Dalam Shalat",
+                question: "Bacaan <em>'Subhana rabbiyal 'adzimi wa bihamdih'</em> dibaca ketika melakukan gerakan ... dalam shalat.",
+                hints: ["Gerakan membungkuk"],
+                keywords: ["ruku", "ruku'", "rukuk"]
+            },
+
+            // --- TAHAP 5: Uraian & Tantangan Akhir (23 - 25) ---
+            {
+                id: 23, stage: 5, type: "drag_select", scoreVal: 5,
+                title: "Soal 23: Syarat Seorang Muadzin (Uraian)",
+                question: "Pilihlah 3 syarat utama yang harus dipenuhi oleh seorang Muadzin!",
+                options: [
+                    { id: "1", text: "Beragama Islam", correct: true },
+                    { id: "2", text: "Berakal Sehat", correct: true },
+                    { id: "3", text: "Mumayyiz (Bisa membedakan baik dan buruk)", correct: true },
+                    { id: "4", text: "Harus Orang Kaya", correct: false },
+                    { id: "5", text: "Harus Berusia 50 Tahun", correct: false }
+                ]
+            },
+            {
+                id: 24, stage: 5, type: "drag_select", scoreVal: 5,
+                title: "Soal 24: Hikmah Adzan (Uraian)",
+                question: "Pilihlah 3 Hikmah dan Keutamaan Adzan dalam kehidupan sehari-hari!",
+                options: [
+                    { id: "1", text: "Mengingatkan manusia akan waktu ibadah shalat", correct: true },
+                    { id: "2", text: "Menyiarkan syiar agama Islam di masyarakat", correct: true },
+                    { id: "3", text: "Mendapat pahala yang besar bagi muadzin", correct: true },
+                    { id: "4", text: "Sebagai tanda untuk mulai berbelanja", correct: false }
+                ]
+            },
+            {
+                id: 25, stage: 5, type: "drag_select", scoreVal: 5,
+                title: "Soal 25: Hal-Hal Yang Membatalkan Shalat (Uraian)",
+                question: "Pilihlah 3 hal yang dapat MEMBATALKAN shalat fardhu!",
+                options: [
+                    { id: "1", text: "Berbicara dengan sengaja saat shalat", correct: true },
+                    { id: "2", text: "Berhadas (Kentut / Batal Wudhu)", correct: true },
+                    { id: "3", text: "Makan atau minum dengan sengaja", correct: true },
+                    { id: "4", text: "Membaca Al-Fatihah dengan benar", correct: false }
+                ]
+            }
+        ];
+
+        /* --------------------------------------------------
+           Game State Management
+        -------------------------------------------------- */
+        let state = {
+            playerName: "Siswa",
+            currentStage: 1,
+            unlockedStages: [1], // Level 1 is unlocked by default
+            stageScores: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+            userAnswers: {}, // key: questionId
+            currentQuestionIndexInStage: 0
+        };
+
+        // Load progress from localStorage if available
+        function loadSaveData() {
+            const saved = localStorage.getItem('fikih_game_progress_v1');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed };
+                } catch(e) { console.error(e); }
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('fikih_game_progress_v1', JSON.stringify(state));
+        }
+
+        function resetProgress() {
+            if (confirm("Apakah kamu yakin ingin mengulang seluruh petualangan dari awal?")) {
+                localStorage.removeItem('fikih_game_progress_v1');
+                state.unlockedStages = [1];
+                state.stageScores = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                state.userAnswers = {};
+                renderLevels();
+                openModal("Reset Berhasil", "Semua kemajuan game telah direset.", "fa-circle-check text-emerald-500");
+            }
+        }
+
+        /* --------------------------------------------------
+           Navigation & UI Renderers
+        -------------------------------------------------- */
+        function startGame() {
+            const input = document.getElementById('playerName').value.trim();
+            if (input !== "") {
+                state.playerName = input;
+            } else {
+                state.playerName = "Siswa Sholeh";
+            }
+            saveData();
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('levelScreen').classList.remove('hidden');
+            document.getElementById('displayPlayerName').innerText = state.playerName;
+            renderLevels();
+        }
+
+        function renderLevels() {
+            const container = document.getElementById('levelGrid');
+            container.innerHTML = '';
+
+            STAGES.forEach(stg => {
+                const isUnlocked = state.unlockedStages.includes(stg.id);
+                const score = state.stageScores[stg.id] || 0;
+                
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-3xl p-6 shadow-md border-2 ${isUnlocked ? 'border-teal-200 hover:border-teal-400 card-bounce cursor-pointer' : 'border-slate-200 opacity-80'} relative overflow-hidden transition`;
+
+                let statusBadge = '';
+                if (!isUnlocked) {
+                    statusBadge = `<div class="bg-slate-200 text-slate-600 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1">
+                        <i class="fa-solid fa-lock animate-lock text-slate-500"></i>
+                        <span>TERKUNCI</span>
+                    </div>`;
+                } else if (score > 0) {
+                    statusBadge = `<div class="bg-emerald-100 text-emerald-800 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1">
+                        <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                        <span>SKOR: ${score}</span>
+                    </div>`;
+                } else {
+                    statusBadge = `<div class="bg-amber-100 text-amber-800 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1">
+                        <i class="fa-solid fa-play text-amber-600"></i>
+                        <span>SIAP MAIN</span>
+                    </div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-tr ${stg.color} text-white rounded-2xl flex items-center justify-center text-xl shadow-md">
+                            <i class="fa-solid ${stg.icon}"></i>
+                        </div>
+                        ${statusBadge}
                     </div>
-                    <div>
-                        <h3 class="font-fredoka text-xl sm:text-2xl font-bold text-slate-800 mb-2">${slide.title}</h3>
-                        <p class="text-sm text-slate-700 leading-relaxed mb-2">${slide.desc}</p>
-                        <p class="text-xs font-bold text-indigo-600 mb-1"><i class="fa-solid fa-check-circle mr-1"></i> ${slide.detail}</p>
-                        <span class="bg-amber-200 text-amber-900 text-xs font-bold px-3 py-1 rounded-lg inline-block mt-1">${slide.properties}</span>
+                    <h3 class="font-header font-bold text-lg text-slate-800">${stg.name}</h3>
+                    <p class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">${stg.desc}</p>
+
+                    <button ${isUnlocked ? `onclick="selectStage(${stg.id})"` : 'disabled'} 
+                        class="w-full py-2.5 rounded-xl font-header font-bold text-sm transition flex items-center justify-center space-x-2 ${
+                            isUnlocked 
+                            ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md' 
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        }">
+                        <span>${isUnlocked ? 'Mulai Tahap Ini' : 'Selesaikan Tahap Sebelum'}</span>
+                        <i class="fa-solid ${isUnlocked ? 'fa-arrow-right' : 'fa-lock'}"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function backToLevels() {
+            document.getElementById('gameplayScreen').classList.add('hidden');
+            document.getElementById('certificateScreen').classList.add('hidden');
+            document.getElementById('levelScreen').classList.remove('hidden');
+            renderLevels();
+        }
+
+        /* --------------------------------------------------
+           Gameplay Core
+        -------------------------------------------------- */
+        let currentStageQuestions = [];
+
+        function selectStage(stageId) {
+            state.currentStage = stageId;
+            currentStageQuestions = QUESTIONS.filter(q => q.stage === stageId);
+            state.currentQuestionIndexInStage = 0;
+
+            document.getElementById('levelScreen').classList.add('hidden');
+            document.getElementById('gameplayScreen').classList.remove('hidden');
+            document.getElementById('stageTitleHeader').innerText = `TAHAP ${stageId}: ${STAGES.find(s=>s.id===stageId).name}`;
+
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = currentStageQuestions[state.currentQuestionIndexInStage];
+            const box = document.getElementById('questionBox');
+            document.getElementById('questionProgressText').innerText = `Soal ${state.currentQuestionIndexInStage + 1} dari ${currentStageQuestions.length}`;
+            document.getElementById('currentScoreDisplay').innerText = calculateTotalScore();
+
+            // Toggle Prev Button
+            if (state.currentQuestionIndexInStage > 0) {
+                document.getElementById('btnPrev').classList.remove('hidden');
+            } else {
+                document.getElementById('btnPrev').classList.add('hidden');
+            }
+
+            // Next button text
+            const isLastInStage = state.currentQuestionIndexInStage === currentStageQuestions.length - 1;
+            document.getElementById('btnNext').innerHTML = isLastInStage 
+                ? '<span>Selesai Tahap</span> <i class="fa-solid fa-check-double"></i>' 
+                : '<span>Lanjut</span> <i class="fa-solid fa-chevron-right"></i>';
+
+            let html = `
+                <div>
+                    <div class="flex items-center space-x-2 mb-2">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                            ${q.title}
+                        </span>
+                        <span class="text-xs text-slate-400 font-semibold">(Bobot: ${q.scoreVal} Poin)</span>
                     </div>
+                    <h3 class="font-header font-bold text-lg md:text-xl text-slate-800 mb-6 leading-relaxed">
+                        ${q.question}
+                    </h3>
+                </div>
+            `;
+
+            // Render based on Question Type
+            if (q.type === 'pg_kompleks') {
+                html += renderPGKompleks(q);
+            } else if (q.type === 'matching') {
+                html += renderMatching(q);
+            } else if (q.type === 'true_false') {
+                html += renderTrueFalse(q);
+            } else if (q.type === 'short_answer') {
+                html += renderShortAnswer(q);
+            } else if (q.type === 'drag_select') {
+                html += renderDragSelect(q);
+            }
+
+            box.innerHTML = html;
+        }
+
+        /* --- Renderers for Question Types --- */
+
+        // 1. Pilihan Ganda Kompleks
+        function renderPGKompleks(q) {
+            const savedAns = state.userAnswers[q.id] || [];
+            let optionsHtml = '<div class="space-y-3">';
+            q.options.forEach(opt => {
+                const checked = savedAns.includes(opt.id) ? 'checked' : '';
+                optionsHtml += `
+                    <label class="flex items-center p-4 rounded-2xl border-2 border-slate-200 hover:border-teal-400 bg-slate-50/50 cursor-pointer transition">
+                        <input type="checkbox" name="q_${q.id}" value="${opt.id}" ${checked} onchange="savePGKompleksAnswer(${q.id})" class="w-5 h-5 text-teal-600 rounded focus:ring-teal-500 mr-3">
+                        <span class="text-sm md:text-base font-semibold text-slate-700">${opt.text}</span>
+                    </label>
+                `;
+            });
+            optionsHtml += '</div>';
+            return optionsHtml;
+        }
+
+        function savePGKompleksAnswer(qId) {
+            const checkedInputs = document.querySelectorAll(`input[name="q_${qId}"]:checked`);
+            const selectedVals = Array.from(checkedInputs).map(cb => cb.value);
+            state.userAnswers[qId] = selectedVals;
+            saveData();
+        }
+
+        // 2. Menjodohkan / Matching
+        function renderMatching(q) {
+            const savedAns = state.userAnswers[q.id] || {};
+            let html = '<div class="space-y-4">';
+            q.pairs.forEach((pair, idx) => {
+                const currentVal = savedAns[pair.left] || '';
+                // build right options dropdown
+                let dropdownOpts = `<option value="">-- Pilih Pasangan --</option>`;
+                q.pairs.forEach(p => {
+                    const sel = currentVal === p.right ? 'selected' : '';
+                    dropdownOpts += `<option value="${p.right}" ${sel}>${p.right}</option>`;
+                });
+
+                html += `
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl gap-3">
+                        <span class="font-bold text-sm md:text-base text-slate-800 flex-1">${pair.left}</span>
+                        <i class="fa-solid fa-arrow-right text-teal-500 hidden sm:block"></i>
+                        <select onchange="saveMatchingAnswer(${q.id}, '${pair.left}', this.value)" class="w-full sm:w-1/2 p-2.5 rounded-xl border-2 border-teal-200 text-sm font-semibold text-slate-700 focus:outline-none focus:border-teal-500">
+                            ${dropdownOpts}
+                        </select>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function saveMatchingAnswer(qId, leftKey, val) {
+            if (!state.userAnswers[qId]) state.userAnswers[qId] = {};
+            state.userAnswers[qId][leftKey] = val;
+            saveData();
+        }
+
+        // 3. Benar / Salah
+        function renderTrueFalse(q) {
+            const savedAns = state.userAnswers[q.id]; // boolean or null
+            return `
+                <div class="grid grid-cols-2 gap-4 my-6">
+                    <button onclick="saveTrueFalseAnswer(${q.id}, true)" class="p-6 rounded-2xl border-4 ${savedAns === true ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 hover:border-emerald-300 text-slate-700'} flex flex-col items-center justify-center transition card-bounce">
+                        <i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-2"></i>
+                        <span class="font-header font-bold text-xl">BENAR</span>
+                    </button>
+                    <button onclick="saveTrueFalseAnswer(${q.id}, false)" class="p-6 rounded-2xl border-4 ${savedAns === false ? 'border-rose-500 bg-rose-50 text-rose-800' : 'border-slate-200 hover:border-rose-300 text-slate-700'} flex flex-col items-center justify-center transition card-bounce">
+                        <i class="fa-solid fa-circle-xmark text-4xl text-rose-500 mb-2"></i>
+                        <span class="font-header font-bold text-xl">SALAH</span>
+                    </button>
                 </div>
             `;
         }
 
-        function nextSlide() {
-            currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-            renderSlide();
+        function saveTrueFalseAnswer(qId, val) {
+            state.userAnswers[qId] = val;
+            saveData();
+            renderQuestion();
         }
 
-        function prevSlide() {
-            currentSlideIndex = (currentSlideIndex - 1 + slides.length) % slides.length;
-            renderSlide();
-        }
-
-        // --- STAGE 4: TOURNAMENT GAME (10 Questions in English) ---
-        const quizQuestions = [
-            { q: "Which 2D shape has 4 equal sides?", options: ["Square", "Rectangle", "Triangle", "Circle"], answer: 0 },
-            { q: "What shape is a classroom wall clock usually?", options: ["Triangle", "Circle", "Square", "Rectangle"], answer: 1 },
-            { q: "How many sides does a Triangle have?", options: ["2", "3", "4", "5"], answer: 1 },
-            { q: "The blackboard in the classroom is shaped like a...", options: ["Circle", "Square", "Rectangle", "Triangle"], answer: 2 },
-            { q: "Which shape has ZERO angles?", options: ["Square", "Triangle", "Circle", "Rectangle"], answer: 2 },
-            { q: "How many angles does a triangle ruler have?", options: ["2", "3", "4", "1"], answer: 1 },
-            { q: "The opposite sides of a Rectangle are...", options: ["Different", "Equal in length", "Curved", "Unequal"], answer: 1 },
-            { q: "A metal coin is shaped like a...", options: ["Square", "Triangle", "Circle", "Rectangle"], answer: 2 },
-            { q: "Floor tiles in rooms are usually shaped as a...", options: ["Triangle", "Square", "Circle", "Trapezoid"], answer: 1 },
-            { q: "How many angles does a Square have?", options: ["2", "3", "4", "0"], answer: 2 }
-        ];
-
-        let tournamentState = {
-            matchType: 1, // 1 for Match 1, 2 for Match 2, 3 for Finals
-            teamA: 'Red',
-            teamB: 'Yellow',
-            scoreA: 0,
-            scoreB: 0,
-            currentQ: 0,
-            activeTeam: null
-        };
-
-        let scores = { Red: 0, Yellow: 0, Green: 0, Black: 0 };
-        let matchWinners = { match1: null, match2: null };
-
-        function startMatch(matchNum) {
-            initAudio();
-            if (!isMusicPlaying && !musicMuted) startBgMusic();
-
-            tournamentState.matchType = matchNum;
-            if(matchNum === 1) {
-                tournamentState.teamA = 'Red';
-                tournamentState.teamB = 'Yellow';
-                document.getElementById('battle-match-title').innerText = "Prelim Match 1";
-            } else {
-                tournamentState.teamA = 'Green';
-                tournamentState.teamB = 'Black';
-                document.getElementById('battle-match-title').innerText = "Prelim Match 2";
-            }
-            tournamentState.scoreA = 0;
-            tournamentState.scoreB = 0;
-            tournamentState.currentQ = 0;
-            tournamentState.activeTeam = null;
-
-            document.getElementById('team-a-name').innerText = tournamentState.teamA;
-            document.getElementById('team-b-name').innerText = tournamentState.teamB;
-
-            document.getElementById('tournament-setup-view').classList.add('hidden');
-            document.getElementById('tournament-battle-view').classList.remove('hidden');
-            document.getElementById('tournament-result-view').classList.add('hidden');
-
-            loadQuestion();
-        }
-
-        function startFinalMatch() {
-            initAudio();
-            if (!isMusicPlaying && !musicMuted) startBgMusic();
-
-            tournamentState.matchType = 3;
-            tournamentState.teamA = matchWinners.match1;
-            tournamentState.teamB = matchWinners.match2;
-            tournamentState.scoreA = 0;
-            tournamentState.scoreB = 0;
-            tournamentState.currentQ = 0;
-            tournamentState.activeTeam = null;
-
-            document.getElementById('battle-match-title').innerText = "CHAMPIONSHIP FINALS!";
-            document.getElementById('team-a-name').innerText = tournamentState.teamA;
-            document.getElementById('team-b-name').innerText = tournamentState.teamB;
-
-            document.getElementById('tournament-setup-view').classList.add('hidden');
-            document.getElementById('tournament-battle-view').classList.remove('hidden');
-            document.getElementById('tournament-result-view').classList.add('hidden');
-
-            loadQuestion();
-        }
-
-        function loadQuestion() {
-            if(tournamentState.currentQ >= 10) {
-                endMatch();
-                return;
-            }
-
-            const qData = quizQuestions[tournamentState.currentQ];
-            document.getElementById('current-q-num').innerText = tournamentState.currentQ + 1;
-            document.getElementById('question-text').innerText = qData.q;
-            document.getElementById('battle-feedback').innerText = '';
-            tournamentState.activeTeam = null;
-
-            document.getElementById('buzzer-prompt-area').classList.remove('hidden');
-            document.getElementById('battle-options-area').classList.add('hidden');
-
-            const buzzerArea = document.getElementById('active-buzzers-area');
-            buzzerArea.innerHTML = `
-                <button onclick="pressBuzzer('${tournamentState.teamA}')" class="bg-rose-500 hover:bg-rose-600 text-white font-fredoka font-bold text-lg px-8 py-4 rounded-2xl shadow-lg transition-transform hover:scale-105 flex items-center gap-3 border-b-4 border-rose-700">
-                    <i class="fa-solid fa-bell"></i> ${tournamentState.teamA} Buzzer
-                </button>
-                <button onclick="pressBuzzer('${tournamentState.teamB}')" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-fredoka font-bold text-lg px-8 py-4 rounded-2xl shadow-lg transition-transform hover:scale-105 flex items-center gap-3 border-b-4 border-amber-700">
-                    <i class="fa-solid fa-bell"></i> ${tournamentState.teamB} Buzzer
-                </button>
+        // 4. Isian Singkat
+        function renderShortAnswer(q) {
+            const savedAns = state.userAnswers[q.id] || '';
+            return `
+                <div class="space-y-4 my-4">
+                    <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-800 flex items-center space-x-2">
+                        <i class="fa-solid fa-lightbulb text-amber-500 text-base"></i>
+                        <span>Petunjuk: ${q.hints.join(', ')}</span>
+                    </div>
+                    <input type="text" value="${savedAns}" onkeyup="saveShortAnswer(${q.id}, this.value)" placeholder="Ketik jawabanmu di sini..." class="w-full px-5 py-4 rounded-2xl border-2 border-teal-300 focus:border-teal-500 focus:outline-none font-semibold text-slate-800 text-base shadow-inner">
+                </div>
             `;
         }
 
-        function pressBuzzer(teamName) {
-            playSFX('buzzer');
-            tournamentState.activeTeam = teamName;
-            document.getElementById('buzzer-prompt-area').classList.add('hidden');
-            document.getElementById('active-buzzers-area').innerHTML = `<div class="bg-indigo-100 text-indigo-800 font-bold px-4 py-2 rounded-xl text-sm"><i class="fa-solid fa-bolt mr-1"></i> <span class="text-rose-600 font-fredoka">${teamName} Group</span> buzzed first! Choose your answer:</div>`;
+        function saveShortAnswer(qId, val) {
+            state.userAnswers[qId] = val;
+            saveData();
+        }
 
-            const qData = quizQuestions[tournamentState.currentQ];
-            const optionsArea = document.getElementById('battle-options-area');
-            optionsArea.classList.remove('hidden');
-            optionsArea.innerHTML = '';
-
-            qData.options.forEach((opt, idx) => {
-                optionsArea.innerHTML += `
-                    <button onclick="submitAnswer(${idx})" class="bg-white hover:bg-indigo-600 hover:text-white text-slate-800 font-semibold p-3 rounded-2xl border border-indigo-200 shadow-sm transition-colors text-left flex items-center justify-between">
-                        <span>${String.fromCharCode(65 + idx)}. ${opt}</span>
-                        <i class="fa-solid fa-chevron-right text-xs opacity-50"></i>
+        // 5. Drag/Multi Select Uraian
+        function renderDragSelect(q) {
+            const savedAns = state.userAnswers[q.id] || [];
+            let html = '<div class="space-y-3 my-2">';
+            q.options.forEach(opt => {
+                const isSelected = savedAns.includes(opt.id);
+                html += `
+                    <button onclick="toggleDragSelect(${q.id}, '${opt.id}')" class="w-full text-left p-4 rounded-2xl border-2 transition ${isSelected ? 'border-rose-500 bg-rose-50 text-rose-900 shadow-sm' : 'border-slate-200 bg-white hover:border-rose-200 text-slate-700'} flex items-center justify-between">
+                        <span class="font-semibold text-sm md:text-base">${opt.text}</span>
+                        <i class="fa-solid ${isSelected ? 'fa-square-check text-rose-600 text-xl' : 'fa-square text-slate-300 text-xl'}"></i>
                     </button>
                 `;
             });
+            html += '</div>';
+            return html;
         }
 
-        function submitAnswer(selectedIndex) {
-            const qData = quizQuestions[tournamentState.currentQ];
-            const feedback = document.getElementById('battle-feedback');
-            const isCorrect = (selectedIndex === qData.answer);
-
-            if(isCorrect) {
-                playSFX('correct');
-                feedback.innerHTML = `<span class="text-emerald-600"><i class="fa-solid fa-circle-check mr-1"></i> CORRECT! ${tournamentState.activeTeam} Group gets +10 points!</span>`;
-                if(tournamentState.activeTeam === tournamentState.teamA) tournamentState.scoreA += 10;
-                else tournamentState.scoreB += 10;
+        function toggleDragSelect(qId, optId) {
+            if (!state.userAnswers[qId]) state.userAnswers[qId] = [];
+            const index = state.userAnswers[qId].indexOf(optId);
+            if (index > -1) {
+                state.userAnswers[qId].splice(index, 1);
             } else {
-                playSFX('wrong');
-                feedback.innerHTML = `<span class="text-rose-500"><i class="fa-solid fa-circle-xmark mr-1"></i> INCORRECT! Correct answer was ${String.fromCharCode(65 + qData.answer)}. ${tournamentState.activeTeam} Group gets -5 points.</span>`;
-                if(tournamentState.activeTeam === tournamentState.teamA) tournamentState.scoreA = Math.max(0, tournamentState.scoreA - 5);
-                else tournamentState.scoreB = Math.max(0, tournamentState.scoreB - 5);
+                state.userAnswers[qId].push(optId);
             }
-
-            document.getElementById('battle-options-area').classList.add('hidden');
-
-            setTimeout(() => {
-                tournamentState.currentQ++;
-                loadQuestion();
-            }, 2200);
+            saveData();
+            renderQuestion();
         }
 
-        function endMatch() {
-            playSFX('fanfare');
-            document.getElementById('tournament-battle-view').classList.add('hidden');
-            document.getElementById('tournament-result-view').classList.remove('hidden');
+        /* --------------------------------------------------
+           Navigation Controls & Score Checking
+        -------------------------------------------------- */
+        function prevQuestion() {
+            if (state.currentQuestionIndexInStage > 0) {
+                state.currentQuestionIndexInStage--;
+                renderQuestion();
+            }
+        }
 
-            let winner = tournamentState.scoreA >= tournamentState.scoreB ? tournamentState.teamA : tournamentState.teamB;
-
-            scores[tournamentState.teamA] = tournamentState.scoreA;
-            scores[tournamentState.teamB] = tournamentState.scoreB;
-
-            document.getElementById('score-red').innerText = scores.Red;
-            document.getElementById('score-yellow').innerText = scores.Yellow;
-            document.getElementById('score-green').innerText = scores.Green;
-            document.getElementById('score-black').innerText = scores.Black;
-
-            if(tournamentState.matchType === 1) {
-                matchWinners.match1 = winner;
-                document.getElementById('winner-announcement').innerText = `Match 1 Winner: ${winner} Group!`;
-                document.getElementById('winner-details').innerText = `${winner} Group advances to the Championship Finals!`;
-            } else if(tournamentState.matchType === 2) {
-                matchWinners.match2 = winner;
-                document.getElementById('winner-announcement').innerText = `Match 2 Winner: ${winner} Group!`;
-                document.getElementById('winner-details').innerText = `${winner} Group advances to the Finals! The Finals button is now unlocked.`;
-                document.getElementById('final-btn').disabled = false;
-                document.getElementById('final-btn').classList.remove('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
-                document.getElementById('final-btn').classList.add('bg-amber-500', 'hover:bg-amber-600', 'text-slate-900', 'cursor-pointer');
+        function nextQuestion() {
+            const isLast = state.currentQuestionIndexInStage === currentStageQuestions.length - 1;
+            if (isLast) {
+                finishStage();
             } else {
-                document.getElementById('winner-announcement').innerText = `🏆 TOURNAMENT CHAMPION: ${winner.toUpperCase()} GROUP! 🏆`;
-                document.getElementById('winner-details').innerText = `Congratulations to ${winner} Group for incredible teamwork and speed!`;
+                state.currentQuestionIndexInStage++;
+                renderQuestion();
             }
         }
 
-        function exitMatchToSetup() {
-            document.getElementById('tournament-battle-view').classList.add('hidden');
-            document.getElementById('tournament-setup-view').classList.remove('hidden');
-        }
+        function finishStage() {
+            // Calculate Stage Score
+            let stageScore = 0;
+            currentStageQuestions.forEach(q => {
+                stageScore += checkQuestionScore(q);
+            });
 
-        function returnToSetupAfterMatch() {
-            document.getElementById('tournament-result-view').classList.add('hidden');
-            document.getElementById('tournament-setup-view').classList.remove('hidden');
-        }
+            state.stageScores[state.currentStage] = stageScore;
 
-        // --- STAGE 5: REFLECTION ---
-        function saveReflectionNote() {
-            const note = document.getElementById('reflection-input').value.trim();
-            const msg = document.getElementById('reflection-saved-msg');
-            if(note.length > 0) {
-                playSFX('correct');
-                msg.classList.remove('hidden');
-                setTimeout(() => msg.classList.add('hidden'), 3000);
+            const stgConfig = STAGES.find(s => s.id === state.currentStage);
+            
+            // Check Unlock condition for Next Level
+            const nextStageId = state.currentStage + 1;
+            if (nextStageId <= 5) {
+                if (!state.unlockedStages.includes(nextStageId)) {
+                    state.unlockedStages.push(nextStageId);
+                    playSound('unlock');
+                }
+            }
+
+            saveData();
+
+            // Trigger confetti
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            // Check if all stages completed
+            if (state.currentStage === 5) {
+                showCertificate();
+            } else {
+                openModal(
+                    `Tahap ${state.currentStage} Selesai! 🎉`, 
+                    `Hebat! Kamu berhasil mengumpulkan <strong>${stageScore} Poin</strong> pada tahap ini. Tahap ${nextStageId} kini telah TERBUKA!`,
+                    "fa-trophy text-amber-500",
+                    () => { backToLevels(); }
+                );
             }
         }
 
-        // Initialize on load
+        function checkQuestionScore(q) {
+            const userAns = state.userAnswers[q.id];
+            if (!userAns) return 0;
+
+            if (q.type === 'pg_kompleks') {
+                // userAns is array of selected opt ids
+                const correctIds = q.options.filter(o => o.correct).map(o => o.id);
+                // check if matches completely
+                const isMatch = userAns.length === correctIds.length && userAns.every(id => correctIds.includes(id));
+                if (isMatch) { playSound('correct'); return q.scoreVal; }
+            } else if (q.type === 'matching') {
+                // userAns is object { left: right }
+                let correctCount = 0;
+                q.pairs.forEach(p => {
+                    if (userAns[p.left] === p.right) correctCount++;
+                });
+                if (correctCount === q.pairs.length) { playSound('correct'); return q.scoreVal; }
+                else if (correctCount > 0) return Math.floor((correctCount / q.pairs.length) * q.scoreVal);
+            } else if (q.type === 'true_false') {
+                if (userAns === q.correctAnswer) { playSound('correct'); return q.scoreVal; }
+            } else if (q.type === 'short_answer') {
+                const cleanUserStr = String(userAns).trim().toLowerCase();
+                const isCorrect = q.keywords.some(kw => cleanUserStr.includes(kw));
+                if (isCorrect) { playSound('correct'); return q.scoreVal; }
+            } else if (q.type === 'drag_select') {
+                const correctIds = q.options.filter(o => o.correct).map(o => o.id);
+                const isMatch = userAns.length === correctIds.length && userAns.every(id => correctIds.includes(id));
+                if (isMatch) { playSound('correct'); return q.scoreVal; }
+            }
+
+            return 0;
+        }
+
+        function calculateTotalScore() {
+            let total = 0;
+            Object.values(state.stageScores).forEach(sc => {
+                total += sc;
+            });
+            return total;
+        }
+
+        function showCertificate() {
+            document.getElementById('gameplayScreen').classList.add('hidden');
+            document.getElementById('levelScreen').classList.add('hidden');
+            document.getElementById('certificateScreen').classList.remove('hidden');
+
+            document.getElementById('certPlayerName').innerText = state.playerName;
+            document.getElementById('finalScoreText').innerText = calculateTotalScore();
+
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 100,
+                    origin: { y: 0.5 }
+                });
+            }
+        }
+
+        /* --------------------------------------------------
+           Custom Modal Alert System
+        -------------------------------------------------- */
+        let modalCallback = null;
+
+        function openModal(title, message, iconClass, callback = null) {
+            document.getElementById('modalTitle').innerHTML = title;
+            document.getElementById('modalMessage').innerHTML = message;
+            document.getElementById('modalIcon').className = `w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl bg-teal-50 ${iconClass}`;
+            document.getElementById('customModal').classList.remove('hidden');
+            modalCallback = callback;
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+            if (modalCallback) {
+                modalCallback();
+                modalCallback = null;
+            }
+        }
+
+        /* --------------------------------------------------
+           Custom Modal Alert & Confirm System
+        -------------------------------------------------- */
+        let modalCallback = null;
+
+        function openModal(title, message, iconClass, callback = null, showCancel = false) {
+            document.getElementById('modalTitle').innerHTML = title;
+            document.getElementById('modalMessage').innerHTML = message;
+            document.getElementById('modalIcon').className = `w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl bg-teal-50 ${iconClass}`;
+            
+            const cancelBtnHtml = showCancel 
+                ? `<button onclick="closeModal()" class="w-1/2 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold text-sm transition">Batal</button>`
+                : '';
+
+            const confirmBtnWidth = showCancel ? 'w-1/2' : 'w-full';
+
+            const modalFooter = document.querySelector('#customModal .modal-footer') || createModalFooter();
+            modalFooter.innerHTML = `
+                ${cancelBtnHtml}
+                <button onclick="confirmModalAction()" class="${confirmBtnWidth} py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-sm transition">
+                    ${showCancel ? 'Ya, Lanjutkan' : 'Mengerti'}
+                </button>
+            `;
+
+            document.getElementById('customModal').classList.remove('hidden');
+            modalCallback = callback;
+        }
+
+        function createModalFooter() {
+            const footer = document.createElement('div');
+            footer.className = "modal-footer flex space-x-2 mt-4";
+            document.querySelector('#customModal > div').appendChild(footer);
+            return footer;
+        }
+
+        function confirmModalAction() {
+            closeModal();
+            if (modalCallback) {
+                modalCallback();
+                modalCallback = null;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+
+        /* --------------------------------------------------
+           Initialization
+        -------------------------------------------------- */
         window.onload = function() {
-            renderSlide();
+            loadSaveData();
         };
     </script>
 </body>
 </html>
-```
